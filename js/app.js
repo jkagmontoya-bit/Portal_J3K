@@ -23,9 +23,11 @@ async function probarLogin(email, password) {
 
     if (error) {
 
-      console.log("Login incorrecto");
+         console.log(error);
 
-      return false;
+        console.log(error.message);
+
+         return false;
 
     }
 
