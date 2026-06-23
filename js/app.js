@@ -1,3 +1,3 @@
 const SUPABASE_URL = "https://ssbsfqpujqjowrkbyntv.supabase.co";
 
-console.log("Supabase URL cargada");
+console.log("Preparando conexión J3K");
