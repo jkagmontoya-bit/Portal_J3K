@@ -1,0 +1,10 @@
+PORTAL J3K - PÁGINA PRINCIPAL CON ICONO CASCO
+
+Abrir: Portal_J3K_Pagina_Principal_Casco.html
+
+Funcionamiento:
+- La página principal es el dossier corporativo.
+- Los módulos quedan ocultos detrás del icono del casco ubicado en la esquina superior izquierda.
+- Al hacer clic en el casco se abre el panel de módulos.
+- Los módulos están organizados por ACUERDOS, RRHH, CONTABILIDAD y OTROS.
+- Para cargar más módulos, elegir primero la categoría en el selector.

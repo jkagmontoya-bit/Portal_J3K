@@ -1,0 +1,4 @@
+AJUSTES REALIZADOS
+- El icono del casco se movió a una barra flotante vertical lateral más discreta.
+- Se redujo tamaño y opacidad para evitar que se sobremonte con el encabezado del dossier.
+- Se agregó un icono de INICIO para regresar a la página principal.
