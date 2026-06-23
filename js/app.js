@@ -8,3 +8,37 @@ const supabaseClient = window.supabase.createClient(
 );
 
 console.log("Cliente Supabase inicializado");
+async function probarLogin(email, password) {
+
+  try {
+
+    const { data, error } =
+      await supabaseClient.auth.signInWithPassword({
+
+        email: email,
+
+        password: password
+
+      });
+
+    if (error) {
+
+      console.log("Login incorrecto");
+
+      return false;
+
+    }
+
+    console.log("Login correcto");
+
+    return true;
+
+  } catch (e) {
+
+    console.log("Error Supabase");
+
+    return false;
+
+  }
+
+}
