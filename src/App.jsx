@@ -152,6 +152,25 @@ function App() {
       });
   }, []);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const approveUid = params.get('approveUser');
+    
+    if (approveUid && currentUser && currentUser.email === 'jkag.montoya@gmail.com') {
+      import('firebase/firestore').then(({ doc, updateDoc }) => {
+        import('./firebase.js').then(({ db }) => {
+          const userRef = doc(db, 'users', approveUid);
+          updateDoc(userRef, { approved: true })
+            .then(() => {
+              alert('¡Usuario aprobado exitosamente!');
+              window.history.replaceState({}, document.title, "/");
+            })
+            .catch(err => alert('Error al aprobar usuario: ' + err.message));
+        });
+      });
+    }
+  }, [currentUser]);
+
   const loadViewerModule = async (mod) => {
     try {
       const response = await fetch(`data:${mod.mime};base64,${mod.b64}`);
