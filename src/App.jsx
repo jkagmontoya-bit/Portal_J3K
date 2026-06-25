@@ -60,7 +60,7 @@ function LoginModal({ isOpen, onClose, onLoginSuccess }) {
   );
 }
 
-function Drawer({ isOpen, onClose, onLogout, modules = [], onLoadModule }) {
+function Drawer({ isOpen, onClose, onLogout, modules = [], manifestError = '', onLoadModule }) {
   // Group modules by category
   const categories = modules.reduce((acc, mod) => {
     if (!acc[mod.categoria]) acc[mod.categoria] = [];
@@ -82,7 +82,12 @@ function Drawer({ isOpen, onClose, onLogout, modules = [], onLoadModule }) {
           <button className="close-btn" onClick={onClose}>×</button>
         </div>
         <div className="drawer-body">
-          {Object.keys(categories).length === 0 ? (
+          {manifestError ? (
+            <div style={{ padding: '20px', color: '#ff6b6b' }}>
+              <strong>Error al cargar los módulos:</strong>
+              <p>{manifestError}</p>
+            </div>
+          ) : Object.keys(categories).length === 0 ? (
             <p style={{ padding: '20px', color: 'white' }}>Cargando módulos...</p>
           ) : (
             Object.entries(categories).map(([cat, mods]) => (
@@ -110,18 +115,31 @@ function App() {
   const [showAdmin, setShowAdmin] = useState(false);
   const [viewerUrl, setViewerUrl] = useState('');
   const [modules, setModules] = useState([]);
+  const [manifestError, setManifestError] = useState('');
 
   useEffect(() => {
     fetch('/manifest.json')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        return res.text();
+      })
+      .then(text => {
+        if(text.trim().startsWith('<')) throw new Error('Vercel devolvió HTML en lugar de JSON (posible error 404 o rewrite).');
+        return JSON.parse(text);
+      })
       .then(async data => {
         if (data.modules && data.modules.length > 0) {
           setModules(data.modules);
           const inicio = data.modules[0];
           loadViewerModule(inicio);
+        } else {
+          setManifestError('El manifest.json no contiene módulos.');
         }
       })
-      .catch(err => console.error("Error loading manifest:", err));
+      .catch(err => {
+        console.error("Error loading manifest:", err);
+        setManifestError(err.message);
+      });
   }, []);
 
   const loadViewerModule = async (mod) => {
@@ -166,6 +184,7 @@ function App() {
         onClose={() => setShowDrawer(false)} 
         onLogout={handleLogout}
         modules={modules}
+        manifestError={manifestError}
         onLoadModule={handleLoadModule}
       />
     </div>
