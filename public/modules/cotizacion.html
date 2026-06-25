@@ -193,6 +193,7 @@
     <h1>Repositorio de Propuestas Técnico-Económicas</h1>
     <div>
       <button class="alt" onclick="configurarIA()" style="border-color: #f59e0b; color: #b45309;">⚙️ Configurar IA</button>
+      <button class="alt" onclick="nuevaExterna()" style="border-color: #0369a1; color: #0369a1;">📥 Registrar Externa</button>
       <button class="green" onclick="nuevaCotizacion()">+ Nueva Propuesta</button>
     </div>
   </div>
@@ -212,6 +213,41 @@
         <tr><td colspan="5" style="text-align:center;">Cargando repositorio...</td></tr>
       </tbody>
     </table>
+  </div>
+</div>
+
+<!-- EXTERNAL VIEW -->
+<div class="view" id="view-external">
+  <div class="header-bar">
+    <h1>Registrar Cotización Externa</h1>
+    <div>
+      <button class="alt" onclick="showDashboard()">Cancelar</button>
+      <button onclick="guardarExterna()" class="green">Guardar Registro</button>
+    </div>
+  </div>
+
+  <div class="screen">
+    <div class="form-box">
+      <div class="form-title" style="background:#0369a1;">Datos de Cotización Generada por Otros Medios</div>
+      <div class="grid-2">
+        <div class="field"><label>CUI Manual</label><input type="text" id="extCui" placeholder="Ej. COTIZACIÓN J3K: N° 05-2026-Rev01"></div>
+        <div class="field"><label>Fecha</label><input type="text" id="extFecha" placeholder="Ej. Lima, 25 de Junio de 2026"></div>
+        <div class="field"><label>Cliente / Empresa</label><input type="text" id="extEmpresa" placeholder="Ej. PEDELTA LATAM"></div>
+        <div class="field"><label>Monto Total (S/.)</label><input type="number" id="extTotal" step="0.01" value="0.00"></div>
+        <div class="field" style="grid-column: span 2;"><label>Servicio / Proyecto</label><input type="text" id="extProyecto" placeholder="Ej. Servicio de Metrados..."></div>
+      </div>
+    </div>
+    
+    <div class="form-box">
+      <div class="form-title">Documento PDF Final</div>
+      <div class="sustento-box" style="background: #f0fdf4; border-color: #bbf7d0;">
+        <div style="flex:1;">
+          <p style="color: #166534;">Sube aquí el PDF de la cotización que ya enviaste al cliente para guardarlo en el repositorio.</p>
+          <input type="file" id="extFile" accept="application/pdf" style="margin-top:8px;">
+          <div id="extLblFile" style="margin-top:4px; font-size:11px; color:#475569;"></div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -524,6 +560,9 @@
   const fileInput = document.getElementById('fileSustento');
   let currentSustento = null;
 
+  const extFileInput = document.getElementById('extFile');
+  let currentExtFile = null;
+
   fileInput.addEventListener('change', function(e) {
     const file = e.target.files[0];
     if(!file) { document.getElementById('btnIA').style.display = 'none'; return; }
@@ -540,6 +579,18 @@
     localforage.config({ name: 'J3K_Cotizaciones' });
     const stored = await localforage.getItem('cotizaciones_db');
     if(stored) DB = stored;
+    
+    extFileInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        currentExtFile = { name: file.name, dataUrl: evt.target.result };
+        document.getElementById('extLblFile').innerText = `Archivo cargado: ${file.name}`;
+      };
+      reader.readAsDataURL(file);
+    });
+
     renderDashboard();
   }
 
@@ -559,15 +610,18 @@
     }
     DB.slice().reverse().forEach(cot => {
       const tr = document.createElement('tr');
-      const nombre = `${cot.empresa || cot.ruc} - ${cot.proyecto ? cot.proyecto.substring(0,30) : ''}...`;
+      const nombre = `${cot.empresa || cot.ruc || 'SIN NOMBRE'} - ${cot.proyecto ? cot.proyecto.substring(0,30) : ''}...`;
       const sustentoBtn = cot.sustento ? `<button class="alt" onclick="descargarSustento('${cot.id}')">📎 PDF</button>` : '';
+      const externaTag = cot.isExternal ? `<span class="badge" style="background:#fef08a; color:#854d0e; margin-right:5px;">[EXTERNA]</span>` : '';
+      const editBtn = cot.isExternal ? '' : `<button onclick="abrirEdicion('${cot.id}')">Editar</button>`;
+      
       tr.innerHTML = `
         <td><span class="cui-badge">${cot.cui}</span></td>
-        <td style="font-weight:bold;">${nombre}</td>
+        <td style="font-weight:bold;">${externaTag}${nombre}</td>
         <td>${cot.fecha}</td>
         <td>S/ ${formatMoney(cot.total)}</td>
         <td>
-          <button onclick="abrirEdicion('${cot.id}')">Editar</button>
+          ${editBtn}
           ${sustentoBtn}
           <button class="danger" onclick="eliminar('${cot.id}')">X</button>
         </td>
@@ -633,8 +687,48 @@
     setDefaultQuillText();
 
     document.getElementById('view-dashboard').classList.remove('active');
+    document.getElementById('view-external').classList.remove('active');
     document.getElementById('view-editor').classList.add('active');
     switchTab('tab-general');
+  }
+
+  function nuevaExterna() {
+    currentDoc = { id: Date.now().toString() };
+    document.getElementById('extCui').value = generarNuevoCUI();
+    const date = new Date();
+    const mapMesInv = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+    document.getElementById('extFecha').value = `Lima, ${date.getDate()} de ${mapMesInv[date.getMonth()]} de ${date.getFullYear()}`;
+    document.getElementById('extEmpresa').value = '';
+    document.getElementById('extProyecto').value = '';
+    document.getElementById('extTotal').value = '0.00';
+    extFileInput.value = '';
+    currentExtFile = null;
+    document.getElementById('extLblFile').innerText = '';
+
+    document.getElementById('view-dashboard').classList.remove('active');
+    document.getElementById('view-editor').classList.remove('active');
+    document.getElementById('view-external').classList.add('active');
+  }
+
+  async function guardarExterna() {
+    const cui = document.getElementById('extCui').value.trim();
+    if(!cui) { alert("El CUI es obligatorio."); return; }
+    
+    const data = {
+      id: currentDoc.id,
+      cui: cui,
+      fecha: document.getElementById('extFecha').value,
+      empresa: document.getElementById('extEmpresa').value,
+      proyecto: document.getElementById('extProyecto').value,
+      total: parseFloat(document.getElementById('extTotal').value) || 0,
+      sustento: currentExtFile,
+      isExternal: true
+    };
+
+    DB.push(data);
+    await localforage.setItem('cotizaciones_db', DB);
+    renderDashboard();
+    showDashboard();
   }
 
   function abrirEdicion(id) {
@@ -679,12 +773,14 @@
     edBanco.root.innerHTML = cot.banco || '';
 
     document.getElementById('view-dashboard').classList.remove('active');
+    document.getElementById('view-external').classList.remove('active');
     document.getElementById('view-editor').classList.add('active');
     switchTab('tab-general');
   }
 
   function showDashboard() {
     document.getElementById('view-editor').classList.remove('active');
+    document.getElementById('view-external').classList.remove('active');
     document.getElementById('view-dashboard').classList.add('active');
   }
 
