@@ -183,7 +183,19 @@
     .footer-line { border-top: 1px solid #000; width: 250px; margin: 0 auto; margin-top: 60px; padding-top: 5px; font-weight: bold; }
     .footer-bottom { border-top: 3px solid #8BCB6B; margin-top: 40px; text-align: center; padding-top: 10px; font-size: 9pt; font-weight: bold; }
     .footer-bottom span { color: #8BCB6B; }
-  </style>
+  
+  .modal-overlay {
+    position: fixed; top:0; left:0; width:100vw; height:100vh;
+    background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+    display: none; align-items:center; justify-content:center;
+    z-index: 10000;
+  }
+  .modal-content {
+    background: white; padding: 25px; border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: min(90vw, 400px);
+  }
+</style>
+
 </head>
 <body>
 
@@ -192,7 +204,11 @@
   <div class="header-bar">
     <h1>Repositorio de Propuestas Técnico-Económicas</h1>
     <div>
+      
+      <button class="alt" onclick="configurarSeguridad()" style="border-color: #64748B; color: #475569;">🔐 Seguridad</button>
+      <button class="alt" onclick="verPapelera()" style="border-color: #ef4444; color: #ef4444;">🗑️ Papelera</button>
       <button class="alt" onclick="configurarIA()" style="border-color: #f59e0b; color: #b45309;">⚙️ Configurar IA</button>
+
       <button class="alt" onclick="nuevaExterna()" style="border-color: #0369a1; color: #0369a1;">📥 Registrar Externa</button>
       <button class="green" onclick="nuevaCotizacion()">+ Nueva Propuesta</button>
     </div>
@@ -216,7 +232,66 @@
   </div>
 </div>
 
+
+<!-- TRASH VIEW -->
+<div class="view" id="view-trash">
+  <div class="header-bar">
+    <h1>🗑️ Papelera de Reciclaje</h1>
+    <div>
+      <button class="alt" onclick="showDashboard()">Volver al Repositorio</button>
+    </div>
+  </div>
+  <div class="screen">
+    <p style="color: #ef4444; font-size:13px; margin-bottom:10px;">Los elementos en la papelera se eliminan permanentemente después de 7 días.</p>
+    <table class="grid-table">
+      <thead>
+        <tr>
+          <th>CUI</th>
+          <th>PROYECTO</th>
+          <th>FECHA ELIMINADO</th>
+          <th>ACCIONES</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyTrash"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div id="modal-auth" class="modal-overlay">
+  <div class="modal-content">
+    <h2>🔐 Autorización Requerida</h2>
+    <p style="color: #64748b; font-size:13px; margin-bottom:15px;">Ingresa tus credenciales para confirmar esta acción crítica.</p>
+    <div class="field" style="margin-bottom:10px;">
+      <label>Firma / Usuario</label>
+      <input type="text" id="auth-user" placeholder="Ej. Jonathan Diaz">
+    </div>
+    <div class="field">
+      <label>PIN de Seguridad Maestro</label>
+      <input type="password" id="auth-pin" placeholder="••••">
+    </div>
+    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+      <button class="alt" onclick="cerrarAuth()">Cancelar</button>
+      <button class="danger" onclick="confirmarAuth()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- BITACORA MODAL -->
+<div id="modal-bitacora" class="modal-overlay">
+  <div class="modal-content" style="max-width: 600px; max-height:80vh; overflow-y:auto;">
+    <h2>🕒 Bitácora de Auditoría</h2>
+    <p style="color:#64748B; font-size:13px;" id="bitacora-cui"></p>
+    <div id="bitacora-list" style="margin-top:15px; display:flex; flex-direction:column; gap:8px;">
+    </div>
+    <div style="display:flex; justify-content:flex-end; margin-top:20px;">
+      <button class="alt" onclick="document.getElementById('modal-bitacora').style.display='none'">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <!-- EXTERNAL VIEW -->
+
 <div class="view" id="view-external">
   <div class="header-bar">
     <h1>Registrar Cotización Externa</h1>
@@ -580,6 +655,17 @@
     const stored = await localforage.getItem('cotizaciones_db');
     if(stored) DB = stored;
     
+    // AutoClean Trash 7 days
+    const now = Date.now();
+    const sevenDays = 7 * 24 * 60 * 60 * 1000;
+    let changed = false;
+    DB = DB.filter(c => {
+      if(c.deletedAt && (now - c.deletedAt > sevenDays)) { changed = true; return false; }
+      return true;
+    });
+    if(changed) await localforage.setItem('cotizaciones_db', DB);
+
+    
     extFileInput.addEventListener('change', function(e) {
       const file = e.target.files[0];
       if(!file) return;
@@ -601,6 +687,137 @@
     document.getElementById(tabId).classList.add('active');
   }
 
+
+  let currentAuthAction = null;
+  let currentAuthId = null;
+
+  function configurarSeguridad() {
+     const pin = prompt('Configura el PIN Maestro de Seguridad para Eliminaciones:', localStorage.getItem('J3K_MASTER_PIN') || '');
+     if(pin !== null) {
+        localStorage.setItem('J3K_MASTER_PIN', pin.trim());
+        const nombre = prompt('Ingresa tu Firma/Nombre para la Bitácora:', localStorage.getItem('J3K_USER_NAME') || '');
+        if(nombre !== null) localStorage.setItem('J3K_USER_NAME', nombre.trim());
+        alert('Seguridad configurada con éxito.');
+     }
+  }
+
+  function iniciarEliminacion(id) {
+     if(!localStorage.getItem('J3K_MASTER_PIN')) {
+        alert("Primero debes configurar el PIN Maestro de Seguridad en el botón 🔐 Seguridad.");
+        return;
+     }
+     currentAuthAction = 'delete';
+     currentAuthId = id;
+     document.getElementById('auth-user').value = localStorage.getItem('J3K_USER_NAME') || '';
+     document.getElementById('auth-pin').value = '';
+     document.getElementById('modal-auth').style.display = 'flex';
+  }
+
+  function cerrarAuth() {
+     document.getElementById('modal-auth').style.display = 'none';
+  }
+
+  async function confirmarAuth() {
+     const user = document.getElementById('auth-user').value.trim();
+     const pin = document.getElementById('auth-pin').value;
+     if(!user || !pin) return alert("Completa todos los datos.");
+     
+     if(pin !== localStorage.getItem('J3K_MASTER_PIN')) {
+        alert("❌ Clave incorrecta.");
+        const cot = DB.find(c => c.id === currentAuthId);
+        if(cot) {
+           cot.historial = cot.historial || [];
+           cot.historial.push({ user: user, action: 'Intento fallido de eliminación (PIN Incorrecto)', date: new Date().toLocaleString() });
+           await localforage.setItem('cotizaciones_db', DB);
+        }
+        return;
+     }
+
+     localStorage.setItem('J3K_USER_NAME', user);
+
+     if(currentAuthAction === 'delete') {
+        const cot = DB.find(c => c.id === currentAuthId);
+        if(cot) {
+           cot.deletedAt = Date.now();
+           cot.historial = cot.historial || [];
+           cot.historial.push({ user: user, action: 'Enviado a papelera', date: new Date().toLocaleString() });
+           await localforage.setItem('cotizaciones_db', DB);
+           cerrarAuth();
+           renderDashboard();
+        }
+     } else if(currentAuthAction === 'hard-delete') {
+        DB = DB.filter(c => c.id !== currentAuthId);
+        await localforage.setItem('cotizaciones_db', DB);
+        cerrarAuth();
+        verPapelera();
+     }
+  }
+
+  function verPapelera() {
+     document.getElementById('view-dashboard').classList.remove('active');
+     document.getElementById('view-editor').classList.remove('active');
+     document.getElementById('view-external').classList.remove('active');
+     document.getElementById('view-trash').classList.add('active');
+
+     const tbody = document.getElementById('tbodyTrash');
+     tbody.innerHTML = '';
+     DB.slice().reverse().filter(c => c.deletedAt).forEach(cot => {
+        const tr = document.createElement('tr');
+        const nombre = `${cot.empresa || cot.ruc || 'SIN NOMBRE'} - ${cot.proyecto ? cot.proyecto.substring(0,30) : ''}...`;
+        const fechaDel = new Date(cot.deletedAt).toLocaleDateString();
+        tr.innerHTML = `
+          <td><span class="cui-badge" style="background:#f1f5f9; color:#64748B;">${cot.cui}</span></td>
+          <td style="color:#64748B; font-weight:bold;">${nombre}</td>
+          <td>${fechaDel}</td>
+          <td>
+            <button class="green" onclick="restaurar('${cot.id}')">Restaurar</button>
+            <button class="danger" onclick="iniciarEliminacionDefinitiva('${cot.id}')">Eliminar</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+     });
+  }
+
+  async function restaurar(id) {
+     const cot = DB.find(c => c.id === id);
+     if(cot) {
+        cot.deletedAt = null;
+        cot.historial = cot.historial || [];
+        const user = localStorage.getItem('J3K_USER_NAME') || 'Sistema';
+        cot.historial.push({ user: user, action: 'Restaurado de papelera', date: new Date().toLocaleString() });
+        await localforage.setItem('cotizaciones_db', DB);
+        verPapelera();
+     }
+  }
+
+  function iniciarEliminacionDefinitiva(id) {
+     currentAuthAction = 'hard-delete';
+     currentAuthId = id;
+     document.getElementById('auth-user').value = localStorage.getItem('J3K_USER_NAME') || '';
+     document.getElementById('auth-pin').value = '';
+     document.getElementById('modal-auth').style.display = 'flex';
+  }
+
+  function verBitacora(id) {
+     const cot = DB.find(c => c.id === id);
+     if(!cot) return;
+     document.getElementById('bitacora-cui').innerText = cot.cui;
+     const list = document.getElementById('bitacora-list');
+     list.innerHTML = '';
+     const historial = cot.historial || [{ user: 'Sistema', action: 'Creación original (pre-auditoría)', date: cot.fecha || 'Desconocida' }];
+     
+     historial.slice().reverse().forEach(h => {
+        const div = document.createElement('div');
+        div.style.padding = '10px';
+        div.style.background = '#f8fafc';
+        div.style.borderLeft = '3px solid #0ea5e9';
+        div.style.borderRadius = '4px';
+        div.innerHTML = `<strong>${h.action}</strong><br><span style="font-size:12px; color:#64748B;">Por: ${h.user} | Fecha: ${h.date}</span>`;
+        list.appendChild(div);
+     });
+     document.getElementById('modal-bitacora').style.display = 'flex';
+  }
+
   function renderDashboard() {
     const tbody = document.getElementById('dbTbody');
     tbody.innerHTML = '';
@@ -608,7 +825,7 @@
       tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay propuestas guardadas.</td></tr>';
       return;
     }
-    DB.slice().reverse().forEach(cot => {
+    DB.slice().reverse().filter(c => !c.deletedAt).forEach(cot => {
       const tr = document.createElement('tr');
       const nombre = `${cot.empresa || cot.ruc || 'SIN NOMBRE'} - ${cot.proyecto ? cot.proyecto.substring(0,30) : ''}...`;
       const sustentoBtn = cot.sustento ? `<button class="alt" onclick="descargarSustento('${cot.id}')">📎 PDF</button>` : '';
@@ -616,14 +833,17 @@
       const editBtn = cot.isExternal ? '' : `<button onclick="abrirEdicion('${cot.id}')">Editar</button>`;
       
       tr.innerHTML = `
-        <td><span class="cui-badge">${cot.cui}</span></td>
+        <td>
+          <span class="cui-badge">${cot.cui}</span>
+          <button class="alt" onclick="verBitacora('${cot.id}')" title="Ver Historial" style="padding:2px 6px; font-size:11px; margin-left:4px; border:none; background:transparent;">🕒</button>
+        </td>
         <td style="font-weight:bold;">${externaTag}${nombre}</td>
         <td>${cot.fecha}</td>
         <td>S/ ${formatMoney(cot.total)}</td>
         <td>
           ${editBtn}
           ${sustentoBtn}
-          <button class="danger" onclick="eliminar('${cot.id}')">X</button>
+          <button class="danger" onclick="iniciarEliminacion('${cot.id}')">X</button>
         </td>
       `;
       tbody.appendChild(tr);
@@ -722,7 +942,8 @@
       proyecto: document.getElementById('extProyecto').value,
       total: parseFloat(document.getElementById('extTotal').value) || 0,
       sustento: currentExtFile,
-      isExternal: true
+      isExternal: true,
+      historial: [{ user: localStorage.getItem('J3K_USER_NAME') || 'Sistema', action: 'Registro externo inicial', date: new Date().toLocaleString() }]
     };
 
     DB.push(data);
@@ -781,6 +1002,7 @@
   function showDashboard() {
     document.getElementById('view-editor').classList.remove('active');
     document.getElementById('view-external').classList.remove('active');
+    document.getElementById('view-trash').classList.remove('active');
     document.getElementById('view-dashboard').classList.add('active');
   }
 
@@ -824,6 +1046,10 @@
       pagos: edPagos.root.innerHTML,
       banco: edBanco.root.innerHTML
     };
+    
+    data.historial = currentDoc.historial || [];
+    const actionName = (idx >= 0) ? 'Modificó la propuesta' : 'Creación inicial';
+    data.historial.push({ user: localStorage.getItem('J3K_USER_NAME') || 'Sistema', action: actionName, date: new Date().toLocaleString() });
 
     if(isNew) DB.push(data);
     else DB[DB.findIndex(c => c.id === currentDoc.id)] = data;
