@@ -26,7 +26,7 @@ function LoginModal({ isOpen, onClose, onLoginSuccess }) {
 
   if (!isOpen) return null;
 
-  const handleGoogle = async () => {
+  const handleGoogleLogin = async () => {
     try {
       setError('');
       await loginGoogle();
