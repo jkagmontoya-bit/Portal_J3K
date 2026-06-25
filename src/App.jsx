@@ -33,7 +33,7 @@ function LoginModal({ isOpen, onClose, onLoginSuccess }) {
     } catch(e) {
       if(e.message === 'new_user_pending') setError('Cuenta creada. Se envió correo al admin.');
       else if(e.message === 'pending_approval') setError('Tu cuenta está pendiente de aprobación.');
-      else setError('Error al iniciar sesión.');
+      else setError('Error de Firebase: ' + e.message);
     }
   };
 
