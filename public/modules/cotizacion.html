@@ -906,7 +906,10 @@ ${pdfText.substring(0, 30000)}
       }
 
       status.innerText = "🎉 ¡Cotización autocompletada!";
-      setTimeout(() => { status.innerText = ""; }, 5000);
+      setTimeout(() => { 
+        status.innerText = ""; 
+        alert("Cotización autocompletada por IA.\\n\\nRecuerda revisar las descripciones y cantidades.\\n¿Será este el precio final a enviar al cliente?");
+      }, 800);
 
     } catch(err) {
       console.error(err);
