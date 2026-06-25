@@ -278,6 +278,7 @@ function App() {
   const handleLogout = () => {
     logout();
     setShowDrawer(false);
+    setViewerUrl('');
   };
 
   const handleLoadModule = (mod) => {
