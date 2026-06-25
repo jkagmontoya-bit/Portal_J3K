@@ -143,7 +143,9 @@ function Drawer({ isOpen, onClose, onLogout, modules = [], manifestError = '', o
             <div className="drawer-title">Módulos J3K</div>
             <div className="drawer-sub">Acceso protegido para gestión contable interna.</div>
           </div>
-          <button className="close-btn" onClick={onLogout} title="Cerrar Sesión" style={{ marginRight: '10px', fontSize: '16px', background: 'rgba(255,50,50,0.2)', borderRadius: '5px', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🚪</button>
+          <button className="close-btn" onClick={onLogout} title="Cerrar Sesión" style={{ marginRight: '10px', background: 'rgba(255,50,50,0.2)', borderRadius: '5px', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff6b6b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          </button>
           <button className="close-btn" onClick={onClose}>×</button>
         </div>
         <div className="drawer-body">

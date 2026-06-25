@@ -1,4 +1,4 @@
-﻿
+
     * { box-sizing: border-box; }
 
     :root {
@@ -233,7 +233,7 @@
     }
 
     details.category summary::after {
-      content: "â–¾";
+      content: "\25BE";
       color: var(--j3k-light);
       transition: transform .18s ease;
     }
