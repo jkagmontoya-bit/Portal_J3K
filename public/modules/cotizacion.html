@@ -7,6 +7,8 @@
 
   <!-- LocalForage for IndexedDB storage without limits -->
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
+  <!-- PDF.js for client-side text extraction -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 
   <style>
     * { box-sizing: border-box; }
@@ -166,6 +168,7 @@
   <div class="header-bar">
     <h1>Repositorio de Cotizaciones</h1>
     <div>
+      <button class="alt" onclick="configurarIA()" style="border-color: #f59e0b; color: #b45309;">⚙️ Configurar IA</button>
       <button class="green" onclick="nuevaCotizacion()">+ Nueva Cotización</button>
     </div>
   </div>
@@ -295,8 +298,12 @@
       <div class="sustento-box">
         <div style="flex:1;">
           <p>Adjunta aquí el correo del cliente o los TDR en PDF para mantener el sustento en el CUI.</p>
-          <input type="file" id="fileSustento" accept="application/pdf" style="margin-top:8px;">
+          <div style="display:flex; align-items:center; gap: 15px; margin-top:8px;">
+            <input type="file" id="fileSustento" accept="application/pdf">
+            <button class="green" id="btnIA" onclick="autocompletarConIA()" style="display:none; background:linear-gradient(180deg, #fcd34d, #f59e0b); border-color:#d97706; color:#78350f;">✨ Autocompletar con IA</button>
+          </div>
           <div id="lblSustentoFile" style="margin-top:4px; font-size:11px; color:#475569;"></div>
+          <div id="aiStatus" style="margin-top:4px; font-size:12px; color:#b45309; font-weight:bold;"></div>
         </div>
       </div>
     </div>
@@ -749,6 +756,164 @@
     document.getElementById('lblSubtotal').innerText = formatMoney(subtotal);
     document.getElementById('lblIgv').innerText = formatMoney(igv);
     document.getElementById('lblTotal').innerText = formatMoney(total);
+  }
+
+  // --- AI LOGIC (GEMINI & PDF.JS) ---
+  
+  // Set up PDF.js worker
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+  fileInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if(!file) {
+      document.getElementById('btnIA').style.display = 'none';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      currentSustento = { name: file.name, dataUrl: evt.target.result };
+      document.getElementById('lblSustentoFile').innerText = `Archivo cargado: ${file.name}`;
+      
+      // Mostrar botón IA si hay archivo
+      if (file.type === "application/pdf") {
+        document.getElementById('btnIA').style.display = 'block';
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+
+  function configurarIA() {
+    const currentKey = localStorage.getItem('GEMINI_API_KEY') || '';
+    const newKey = prompt('⚙️ Configuración de IA - Google Gemini\\n\\nIngresa tu API Key para habilitar el autocompletado automático.\\nEsta llave se guardará de forma segura SOLO en tu navegador.', currentKey);
+    if(newKey !== null) {
+      localStorage.setItem('GEMINI_API_KEY', newKey.trim());
+      alert('¡Llave guardada con éxito! Ya puedes usar el asistente IA.');
+    }
+  }
+
+  async function extraerTextoPDF(dataUrl) {
+    try {
+      const base64 = dataUrl.split(',')[1];
+      const binary_string = window.atob(base64);
+      const len = binary_string.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binary_string.charCodeAt(i);
+      }
+      
+      const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+      let fullText = "";
+      // Limitar a las primeras 10 páginas para no saturar memoria en TDRs gigantes
+      const numPages = Math.min(pdf.numPages, 10);
+      for (let i = 1; i <= numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items.map(item => item.str).join(" ");
+        fullText += pageText + "\\n";
+      }
+      return fullText;
+    } catch(e) {
+      console.error("Error leyendo PDF", e);
+      return null;
+    }
+  }
+
+  async function autocompletarConIA() {
+    const apiKey = localStorage.getItem('GEMINI_API_KEY');
+    if(!apiKey) {
+      alert("⚠️ No has configurado tu API Key.\\nHaz clic en '⚙️ Configurar IA' en el Panel de Cotizaciones.");
+      return;
+    }
+
+    if(!currentSustento || !currentSustento.dataUrl) {
+      alert("Por favor sube un archivo PDF primero.");
+      return;
+    }
+
+    const btn = document.getElementById('btnIA');
+    const status = document.getElementById('aiStatus');
+    btn.disabled = true;
+    
+    try {
+      status.innerText = "⏳ Leyendo el PDF...";
+      const pdfText = await extraerTextoPDF(currentSustento.dataUrl);
+      if(!pdfText) throw new Error("No se pudo extraer texto del PDF.");
+
+      status.innerText = "✨ Procesando con IA (Gemini)... (puede tomar 5-10s)";
+      
+      const prompt = `Eres un asistente de ventas de J3K Ingeniería. A continuación te pasaré el texto de un TDR, solicitud o correo de un cliente. 
+Extrae la siguiente información y devuélvela ESTRICTAMENTE en formato JSON. No escribas nada de texto fuera del JSON (sin bloques de código markdown, solo el raw JSON).
+Estructura esperada:
+{
+  "ruc": "2050... (solo números, si no existe deja vacío)",
+  "empresa": "Nombre de la empresa",
+  "proyecto": "Nombre del proyecto o servicio resumido",
+  "contacto": "Nombre de la persona de contacto",
+  "email": "correo del contacto",
+  "telefono": "telefono del contacto",
+  "items": [
+    {
+      "desc": "Descripción detallada del servicio/equipo",
+      "cant": "cantidad en número (por defecto 1 si no dice)",
+      "und": "und o serv o glb"
+    }
+  ]
+}
+
+Texto del PDF:
+"""
+${pdfText.substring(0, 30000)}
+"""
+`;
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.1 }
+        })
+      });
+
+      if(!response.ok) {
+        throw new Error("Error en la API de Google Gemini. Verifica tu API Key.");
+      }
+
+      const rawData = await response.json();
+      let aiText = rawData.candidates[0].content.parts[0].text;
+      
+      // Clean possible markdown code blocks
+      aiText = aiText.replace(/^```json/gm, "").replace(/^```/gm, "").trim();
+      const result = JSON.parse(aiText);
+
+      // Populate Form
+      status.innerText = "✅ Llenando formulario...";
+      
+      if(result.ruc) document.getElementById('ruc').value = result.ruc;
+      if(result.empresa) document.getElementById('empresa').value = result.empresa;
+      if(result.proyecto) document.getElementById('proyecto').value = result.proyecto;
+      if(result.contacto) document.getElementById('contacto').value = result.contacto;
+      if(result.email) document.getElementById('email').value = result.email;
+      if(result.telefono) document.getElementById('telefono').value = result.telefono;
+
+      // Populate Items
+      if(result.items && result.items.length > 0) {
+        document.getElementById('tbodyItems').innerHTML = '';
+        itemCount = 0;
+        result.items.forEach(it => {
+          agregarFila(it.desc, parseFloat(it.cant) || 1, it.und || 'und.', 0, null);
+        });
+      }
+
+      status.innerText = "🎉 ¡Cotización autocompletada!";
+      setTimeout(() => { status.innerText = ""; }, 5000);
+
+    } catch(err) {
+      console.error(err);
+      status.innerText = "❌ Error: " + err.message;
+    } finally {
+      btn.disabled = false;
+    }
   }
 
   // Init
