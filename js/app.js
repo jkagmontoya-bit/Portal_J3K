@@ -92,3 +92,7 @@ window.aprobarUsuario = async function(uid) {
     approved: true
   });
 };
+
+window.cerrarSesionAuth = async function() {
+  await signOut(auth);
+};
