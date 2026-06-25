@@ -233,7 +233,34 @@
 </div>
 
 
+
+<!-- TYPE SELECTION MODAL -->
+<div id="modal-type" class="modal-overlay">
+  <div class="modal-content" style="max-width: 500px; text-align: center;">
+    <h2 style="color: var(--j3k-dark); margin-bottom: 20px;">¿Qué tipo de cotización deseas crear?</h2>
+    
+    <div style="display:flex; gap:15px; justify-content:center;">
+      <div onclick="seleccionarTipo('simple')" style="flex:1; padding:20px; border:2px solid var(--j3k-light); border-radius:12px; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background='white'">
+        <div style="font-size:40px; margin-bottom:10px;">📄</div>
+        <h3 style="color:var(--j3k-dark); margin:0 0 5px 0;">Cotización Simple</h3>
+        <p style="font-size:12px; color:#64748b; margin:0;">1 Hoja. Ideal para suministros o servicios puntuales rápidos.</p>
+      </div>
+
+      <div onclick="seleccionarTipo('extendida')" style="flex:1; padding:20px; border:2px solid var(--j3k-light); border-radius:12px; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background='white'">
+        <div style="font-size:40px; margin-bottom:10px;">📑</div>
+        <h3 style="color:var(--j3k-dark); margin:0 0 5px 0;">Propuesta Extendida</h3>
+        <p style="font-size:12px; color:#64748b; margin:0;">Múltiples hojas. Incluye objetivos, alcances y metodología.</p>
+      </div>
+    </div>
+
+    <div style="margin-top:20px; text-align:right;">
+      <button class="alt" onclick="document.getElementById('modal-type').style.display='none'">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- TRASH VIEW -->
+
 <div class="view" id="view-trash">
   <div class="header-bar">
     <h1>🗑️ Papelera de Reciclaje</h1>
@@ -830,6 +857,8 @@
       const nombre = `${cot.empresa || cot.ruc || 'SIN NOMBRE'} - ${cot.proyecto ? cot.proyecto.substring(0,30) : ''}...`;
       const sustentoBtn = cot.sustento ? `<button class="alt" onclick="descargarSustento('${cot.id}')">📎 PDF</button>` : '';
       const externaTag = cot.isExternal ? `<span class="badge" style="background:#fef08a; color:#854d0e; margin-right:5px;">[EXTERNA]</span>` : '';
+      const tipoTag = (!cot.isExternal && cot.tipoCotizacion === 'simple') ? `<span class="badge" style="background:#bae6fd; color:#0369a1; margin-right:5px;">[SIMPLE]</span>` : 
+                      (!cot.isExternal) ? `<span class="badge" style="background:#dcfce7; color:#166534; margin-right:5px;">[EXTENDIDA]</span>` : '';
       const editBtn = cot.isExternal ? '' : `<button onclick="abrirEdicion('${cot.id}')">Editar</button>`;
       
       tr.innerHTML = `
@@ -837,7 +866,7 @@
           <span class="cui-badge">${cot.cui}</span>
           <button class="alt" onclick="verBitacora('${cot.id}')" title="Ver Historial" style="padding:2px 6px; font-size:11px; margin-left:4px; border:none; background:transparent;">🕒</button>
         </td>
-        <td style="font-weight:bold;">${externaTag}${nombre}</td>
+        <td style="font-weight:bold;">${externaTag}${tipoTag}${nombre}</td>
         <td>${cot.fecha}</td>
         <td>S/ ${formatMoney(cot.total)}</td>
         <td>
@@ -992,6 +1021,21 @@
     edCondiciones.root.innerHTML = cot.condiciones || '';
     edPagos.root.innerHTML = cot.pagos || '';
     edBanco.root.innerHTML = cot.banco || '';
+    
+    // Load Simple Fields
+    document.getElementById('simp-contacto').value = cot.simpContacto || '';
+    document.getElementById('simp-telefono').value = cot.simpTelefono || '';
+    document.getElementById('simp-email').value = cot.simpEmail || '';
+    document.getElementById('simp-referencia').value = cot.simpReferencia || '';
+    document.getElementById('simp-moneda').value = cot.simpMoneda || 'Nuevos Soles';
+    document.getElementById('simp-entrega').value = cot.simpEntrega || 'Según pedido';
+    document.getElementById('simp-pago').value = cot.simpPago || '';
+    document.getElementById('simp-validez').value = cot.simpValidez || '07 días';
+    document.getElementById('simp-contactarse').value = cot.simpContactarse || 'Diaz Varas, Kendy Eduardo';
+    document.getElementById('simp-obs').value = cot.simpObs || '';
+
+    currentDoc.tipoCotizacion = cot.tipoCotizacion || 'extendida';
+    aplicarTipoUI(currentDoc.tipoCotizacion);
 
     document.getElementById('view-dashboard').classList.remove('active');
     document.getElementById('view-external').classList.remove('active');
@@ -1044,7 +1088,18 @@
       metoIntro: edMetoIntro.root.innerHTML,
       condiciones: edCondiciones.root.innerHTML,
       pagos: edPagos.root.innerHTML,
-      banco: edBanco.root.innerHTML
+      banco: edBanco.root.innerHTML,
+      tipoCotizacion: currentDoc.tipoCotizacion || 'extendida',
+      simpContacto: document.getElementById('simp-contacto').value,
+      simpTelefono: document.getElementById('simp-telefono').value,
+      simpEmail: document.getElementById('simp-email').value,
+      simpReferencia: document.getElementById('simp-referencia').value,
+      simpMoneda: document.getElementById('simp-moneda').value,
+      simpEntrega: document.getElementById('simp-entrega').value,
+      simpPago: document.getElementById('simp-pago').value,
+      simpValidez: document.getElementById('simp-validez').value,
+      simpContactarse: document.getElementById('simp-contactarse').value,
+      simpObs: document.getElementById('simp-obs').value
     };
     
     data.historial = currentDoc.historial || [];
