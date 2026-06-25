@@ -345,8 +345,12 @@
       <div class="sustento-box" style="background: #f0fdf4; border-color: #bbf7d0;">
         <div style="flex:1;">
           <p style="color: #166534;">Sube aquí el PDF de la cotización que ya enviaste al cliente para guardarlo en el repositorio.</p>
-          <input type="file" id="extFile" accept="application/pdf" style="margin-top:8px;">
+          <div style="display:flex; align-items:center; gap: 15px; margin-top:8px;">
+            <input type="file" id="extFile" accept="application/pdf">
+            <button class="green" id="btnIAExt" onclick="autocompletarExternaConIA()" style="display:none; background:linear-gradient(180deg, #fcd34d, #f59e0b); border-color:#d97706; color:#78350f;">✨ Autocompletar con IA</button>
+          </div>
           <div id="extLblFile" style="margin-top:4px; font-size:11px; color:#475569;"></div>
+          <div id="aiStatusExt" style="margin-top:4px; font-size:12px; color:#b45309; font-weight:bold;"></div>
         </div>
       </div>
     </div>
@@ -695,11 +699,12 @@
     
     extFileInput.addEventListener('change', function(e) {
       const file = e.target.files[0];
-      if(!file) return;
+      if(!file) { document.getElementById('btnIAExt').style.display = 'none'; return; }
       const reader = new FileReader();
       reader.onload = function(evt) {
         currentExtFile = { name: file.name, dataUrl: evt.target.result };
         document.getElementById('extLblFile').innerText = `Archivo cargado: ${file.name}`;
+        if (file.type === "application/pdf") document.getElementById('btnIAExt').style.display = 'block';
       };
       reader.readAsDataURL(file);
     });
@@ -1341,6 +1346,55 @@ Si no encuentras un dato, déjalo vacío (""). Para "items", extrae los servicio
         result.items.forEach(it => agregarFila(it.desc, parseFloat(it.cant)||1, it.und||'und.', 0));
       }
       status.innerText = "🎉 Autocompletado!"; setTimeout(() => { status.innerText = ""; alert("Cotización autocompletada por IA.\\n\\nRecuerda revisar las descripciones y cantidades.\\n¿Será este el precio final a enviar al cliente?"); }, 800);
+    } catch(err) { 
+      console.error(err);
+      status.innerText = "❌ Error: " + err.message; 
+    } finally { 
+      btn.disabled = false; 
+    }
+  }
+
+
+  async function autocompletarExternaConIA() {
+    const apiKey = localStorage.getItem('GEMINI_API_KEY');
+    if(!apiKey) { alert("⚠️ Configura tu API Key primero."); return; }
+    if(!currentExtFile || !currentExtFile.dataUrl) { alert("Sube un PDF primero."); return; }
+    const btn = document.getElementById('btnIAExt'); const status = document.getElementById('aiStatusExt'); btn.disabled = true;
+    try {
+      status.innerText = "✨ Procesando documento con IA... (puede tardar unos segundos)";
+      const base64 = currentExtFile.dataUrl.split(',')[1];
+      
+      const prompt = `Eres un asistente de ventas de J3K. Analiza el documento adjunto (Cotización o Propuesta enviada al cliente) y extrae la siguiente información. 
+Devuelve la respuesta ESTRICTAMENTE en este formato JSON, sin texto adicional:
+{"empresa": "","proyecto": "","total": ""}
+Si no encuentras un dato, déjalo vacío (""). Para "total", extrae SOLO EL NÚMERO (sin S/ ni comas, usa punto para decimal) del MONTO TOTAL SIN IGV (SUBTOTAL) si es posible, o el monto total de la propuesta.`;
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          contents: [{ 
+            parts: [
+              { text: prompt },
+              { inlineData: { mimeType: "application/pdf", data: base64 } }
+            ] 
+          }], 
+          generationConfig: { temperature: 0.1 } 
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error("Error en la API. Verifica tu API Key o el tamaño del PDF.");
+      }
+
+      const rawData = await response.json();
+      let resultText = rawData.candidates[0].content.parts[0].text.replace(/^```json/gm, "").replace(/^```/gm, "").trim();
+      let result = JSON.parse(resultText);
+      
+      if(result.empresa) document.getElementById('extEmpresa').value = result.empresa;
+      if(result.proyecto) document.getElementById('extProyecto').value = result.proyecto;
+      if(result.total) document.getElementById('extTotal').value = parseFloat(result.total) || 0;
+      
+      status.innerText = "🎉 Autocompletado!"; setTimeout(() => { status.innerText = ""; alert("Cotización autocompletada por IA.\n\nRecuerda revisar los datos extraídos."); }, 800);
     } catch(err) { 
       console.error(err);
       status.innerText = "❌ Error: " + err.message; 
