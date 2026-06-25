@@ -92,17 +92,16 @@ function App() {
   useEffect(() => {
     fetch('/manifest.json')
       .then(res => res.json())
-      .then(data => {
+      .then(async data => {
         if (data.modules && data.modules.length > 0) {
           const inicio = data.modules[0];
-          const byteCharacters = atob(inicio.b64);
-          const byteNumbers = new Array(byteCharacters.length);
-          for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          try {
+            const response = await fetch(`data:${inicio.mime};base64,${inicio.b64}`);
+            const blob = await response.blob();
+            setViewerUrl(URL.createObjectURL(blob));
+          } catch (err) {
+            console.error("Error creating Blob from base64:", err);
           }
-          const byteArray = new Uint8Array(byteNumbers);
-          const blob = new Blob([byteArray], { type: inicio.mime });
-          setViewerUrl(URL.createObjectURL(blob));
         }
       })
       .catch(err => console.error("Error loading manifest:", err));
