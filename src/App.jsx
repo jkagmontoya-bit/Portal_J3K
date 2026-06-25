@@ -6,9 +6,6 @@ function FloatingTools({ onRequestLogin, onOpenAdmin }) {
   const { isAdmin } = useAuth();
   return (
     <div className="floating-tools" aria-label="Accesos rápidos J3K">
-      <a href="/Formato_Requerimiento_J3K.xlsx" download className="fab-btn" title="Solicitar Propuesta (Descargar Formato)" style={{ background: '#f59e0b', color: 'white', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-      </a>
       <button className="fab-btn" onClick={onRequestLogin} title="Panel de Contabilidad">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
       </button>
@@ -289,9 +286,46 @@ function App() {
     setShowDrawer(false);
   };
 
+function LandingScreen() {
+  return (
+    <div style={{
+      position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      zIndex: 1, padding: '20px', boxSizing: 'border-box'
+    }}>
+      <div style={{
+        background: 'rgba(255, 255, 255, 0.95)',
+        padding: '40px',
+        borderRadius: '16px',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+        textAlign: 'center',
+        maxWidth: '400px',
+        backdropFilter: 'blur(10px)'
+      }}>
+        <h2 style={{ color: 'var(--j3k-dark)', margin: '0 0 10px 0', fontSize: '24px' }}>Solicitar Propuesta</h2>
+        <p style={{ color: '#475569', fontSize: '14px', marginBottom: '25px', lineHeight: '1.5' }}>
+          Descarga nuestro formato rápido, complétalo con tus requerimientos y envíalo a nuestro equipo para recibir una cotización inmediata.
+        </p>
+        <a href="/Formato_Requerimiento_J3K.xlsx" download style={{
+          display: 'inline-flex', flexDirection: 'column', alignItems: 'center',
+          background: '#f59e0b', color: 'white', textDecoration: 'none',
+          padding: '15px 30px', borderRadius: '12px', transition: 'all 0.2s',
+          boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)'
+        }}
+        onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+        onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '8px' }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          <span style={{ fontWeight: 'bold' }}>Descargar Formato Excel</span>
+        </a>
+      </div>
+    </div>
+  );
+}
+
   return (
     <div className="app">
-      <iframe id="viewer" src={viewerUrl} title="Portal Corporativo J3K" style={{ width: '100%', height: '100%', border: 'none' }}></iframe>
+      {!viewerUrl && <LandingScreen />}
+      <iframe id="viewer" src={viewerUrl} title="Portal Corporativo J3K" style={{ width: '100%', height: '100%', border: 'none', position: 'relative', zIndex: 2, display: viewerUrl ? 'block' : 'none' }}></iframe>
       <FloatingTools 
         onRequestLogin={handleRequestLogin} 
         onOpenAdmin={() => setShowAdmin(true)} 
