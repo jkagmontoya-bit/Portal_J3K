@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>J3K | Cotización de Servicios | Suite documental ejecutiva</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      --azul: #004D33;
+      --azul2: #123f5f;
+      --verde: #65e84a;
+      --gris: #f2f4f7;
+      --borde: #004D33;
+      --texto: #111;
+      --rojo: #b91c1c;
+      --negro: #004D33;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 16px;
+      color: var(--texto);
+      background: #fff;
+      font-size: 12px;
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 8px;
+      text-align: center;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    }
+
+    button {
+      padding: 8px 12px;
+      margin: 3px;
+      border: 1px solid var(--negro);
+      border-radius: 6px;
+      background: var(--negro);
+      color: white;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    button.alt {
+      background: white;
+      color: var(--negro);
+    }
+
+    button.green {
+      background: var(--verde);
+      border-color: var(--verde);
+      color: var(--negro);
+      font-weight: bold;
+    }
+
+    button.danger {
+      background: var(--rojo);
+      border-color: var(--rojo);
+    }
+
+    .screen {
+      max-width: 1120px;
+      margin: auto;
+    }
+
+    .form-box {
+      border: 1px solid #222;
+      margin-bottom: 10px;
+    }
+
+    .form-title {
+      background: var(--negro);
+      color: white;
+      padding: 7px 9px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .field {
+      border-right: 1px solid #222;
+      border-bottom: 1px solid #222;
+      padding: 6px;
+      min-height: 46px;
+    }
+
+    .grid .field:nth-child(4n) {
+      border-right: 0;
+    }
+
+    label {
+      display: block;
+      font-size: 9px;
+      font-weight: bold;
+      color: #555;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 0;
+      outline: none;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 12px;
+      background: transparent;
+      color: #111;
+      resize: none;
+    }
+
+    input[type="number"] {
+      text-align: right;
+    }
+
+    .warn {
+      background: #fff1f2;
+      border: 1px solid var(--rojo);
+      color: var(--rojo);
+      padding: 8px;
+      border-radius: 6px;
+      display: none;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    .preview-title {
+      background: var(--azul);
+      color: white;
+      padding: 8px 10px;
+      text-align: center;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: .3px;
+      margin-top: 14px;
+      border-radius: 6px 6px 0 0;
+    }
+
+    table.items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+    }
+
+    table.items-table th, table.items-table td {
+      border: 1px solid #222;
+      padding: 6px;
+      text-align: left;
+    }
+
+    table.items-table th {
+      background: #eee;
+      font-weight: bold;
+      text-transform: uppercase;
+      font-size: 10px;
+    }
+
+    table.items-table td.center { text-align: center; }
+    table.items-table td.right { text-align: right; }
+
+    .action-btn {
+      padding: 4px 8px;
+      font-size: 10px;
+      margin: 0;
+    }
+
+    /* Print Styles */
+    #printArea {
+      display: none;
+    }
+
+    @media print {
+      body * { visibility: hidden; }
+      body { margin: 0; padding: 0; background: white; }
+      #printArea, #printArea * { visibility: visible; }
+      #printArea {
+        display: block;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+      .toolbar, .screen, .preview-title { display: none !important; }
+      @page { size: A4; margin: 15mm; }
+    }
+
+    /* J3K Print Format */
+    .print-doc {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #000;
+      font-size: 11pt;
+      line-height: 1.4;
+    }
+
+    .print-header {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 2px solid var(--azul);
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+    }
+
+    .print-logo-placeholder {
+      font-size: 24pt;
+      font-weight: 800;
+      color: var(--azul);
+      letter-spacing: -1px;
+    }
+
+    .print-company-details {
+      text-align: right;
+      font-size: 9pt;
+      color: #555;
+    }
+
+    .print-title {
+      font-size: 16pt;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 20px;
+      color: var(--azul);
+    }
+
+    .print-client-info {
+      margin-bottom: 20px;
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 5px;
+    }
+
+    .print-client-info div:nth-child(odd) {
+      font-weight: bold;
+      color: #333;
+    }
+
+    .print-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    .print-table th {
+      background-color: var(--azul);
+      color: white;
+      font-weight: bold;
+      padding: 8px;
+      border: 1px solid var(--azul);
+    }
+
+    .print-table td {
+      padding: 8px;
+      border: 1px solid #ccc;
+    }
+
+    .print-totals {
+      width: 300px;
+      margin-left: auto;
+      border-collapse: collapse;
+    }
+
+    .print-totals td {
+      padding: 6px 8px;
+      border: 1px solid #ccc;
+    }
+
+    .print-totals tr.total-row {
+      background-color: #eee;
+      font-weight: bold;
+      font-size: 12pt;
+    }
+
+    .print-footer {
+      margin-top: 50px;
+      text-align: center;
+      font-size: 9pt;
+      color: #777;
+      border-top: 1px solid #eee;
+      padding-top: 10px;
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button class="alt" onclick="location.reload()">Limpiar Datos</button>
+  <button onclick="generarPDF()" class="green">Generar PDF</button>
+</div>
+
+<div class="screen" id="editor">
+  <div id="msgWarn" class="warn">Faltan datos requeridos.</div>
+
+  <div class="form-box">
+    <div class="form-title">Datos del Documento</div>
+    <div class="grid" style="grid-template-columns: repeat(3, 1fr);">
+      <div class="field">
+        <label>Número de Cotización</label>
+        <input type="text" id="numCotizacion" placeholder="Ej. COT N° 2026-01-003">
+      </div>
+      <div class="field">
+        <label>Fecha</label>
+        <input type="text" id="fecha" placeholder="Ej. Enero 2026">
+      </div>
+      <div class="field" style="border-right:0;">
+        <label>Aplicar IGV (18%)</label>
+        <select id="aplicaIGV" onchange="calcularTotales()">
+          <option value="si">Sí (Aplica 18%)</option>
+          <option value="no">No (Exonerado)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-box">
+    <div class="form-title">Datos del Cliente</div>
+    <div class="grid" style="grid-template-columns: repeat(2, 1fr);">
+      <div class="field">
+        <label>Empresa / Razón Social</label>
+        <input type="text" id="empresa" placeholder="Ej. PROTECMAQ EMPRESA INDIVIDUAL">
+      </div>
+      <div class="field" style="border-right:0;">
+        <label>RUC</label>
+        <input type="text" id="ruc" placeholder="Ej. 20610783440">
+      </div>
+      <div class="field">
+        <label>Contacto</label>
+        <input type="text" id="contacto" placeholder="Nombre de la persona de contacto">
+      </div>
+      <div class="field" style="border-right:0;">
+        <label>Teléfono</label>
+        <input type="text" id="telefono" placeholder="Ej. +51 953 904 995">
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="text" id="email" placeholder="Ej. serviciosprotecmaq@gmail.com">
+      </div>
+      <div class="field" style="border-right:0;">
+        <label>Referencia</label>
+        <input type="text" id="referencia" placeholder="Ej. Solicitud vía correo">
+      </div>
+    </div>
+  </div>
+
+  <div class="form-box">
+    <div class="form-title" style="display: flex; justify-content: space-between; align-items: center;">
+      <span>Ítems / Servicios Cotizados</span>
+      <button class="action-btn" onclick="agregarFila()">+ Agregar Ítem</button>
+    </div>
+    <div style="padding: 10px;">
+      <table class="items-table" id="tablaItems">
+        <thead>
+          <tr>
+            <th width="5%">ITEM</th>
+            <th width="45%">DESCRIPCIÓN</th>
+            <th width="10%" class="center">CANT.</th>
+            <th width="10%" class="center">UNIDAD</th>
+            <th width="15%" class="right">P. UNIT. (S/.)</th>
+            <th width="15%" class="right">TOTAL (S/.)</th>
+            <th width="5%" class="center">X</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyItems">
+          <!-- Las filas se insertarán dinámicamente aquí -->
+        </tbody>
+      </table>
+      
+      <div style="display:flex; justify-content:flex-end;">
+        <table style="width: 250px; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 5px; font-weight: bold; text-align: right;">SUBTOTAL S/.</td>
+            <td style="padding: 5px; text-align: right; border: 1px solid #222;" id="lblSubtotal">0.00</td>
+          </tr>
+          <tr>
+            <td style="padding: 5px; font-weight: bold; text-align: right;">IGV (18%) S/.</td>
+            <td style="padding: 5px; text-align: right; border: 1px solid #222;" id="lblIgv">0.00</td>
+          </tr>
+          <tr style="background:#eee;">
+            <td style="padding: 5px; font-weight: bold; text-align: right;">TOTAL S/.</td>
+            <td style="padding: 5px; text-align: right; border: 1px solid #222; font-weight: bold;" id="lblTotal">0.00</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- AREA DE IMPRESIÓN / PDF -->
+<div id="printArea">
+  <div class="print-doc">
+    
+    <div class="print-header">
+      <div class="print-logo-placeholder">J3K</div>
+      <div class="print-company-details">
+        <strong>J3K INGENIERÍA & DISEÑO S.A.C.</strong><br>
+        RUC: 20612829561<br>
+        Lima, Perú<br>
+        contacto@j3kingenieros.com
+      </div>
+    </div>
+
+    <div class="print-title" id="pTitle">COTIZACIÓN N° </div>
+
+    <div class="print-client-info">
+      <div>Fecha:</div> <div id="pFecha">-</div>
+      <div>Señores:</div> <div id="pEmpresa">-</div>
+      <div>RUC:</div> <div id="pRuc">-</div>
+      <div>Atención:</div> <div id="pContacto">-</div>
+      <div>Teléfono:</div> <div id="pTelefono">-</div>
+      <div>Email:</div> <div id="pEmail">-</div>
+      <div>Referencia:</div> <div id="pReferencia">-</div>
+    </div>
+
+    <table class="print-table">
+      <thead>
+        <tr>
+          <th width="5%">ITEM</th>
+          <th width="50%" style="text-align: left;">DESCRIPCIÓN</th>
+          <th width="10%">CANT.</th>
+          <th width="10%">UND.</th>
+          <th width="12%" style="text-align: right;">P. UNIT. S/.</th>
+          <th width="13%" style="text-align: right;">TOTAL S/.</th>
+        </tr>
+      </thead>
+      <tbody id="pTableBody">
+        <!-- Generado en JS -->
+      </tbody>
+    </table>
+
+    <table class="print-totals">
+      <tr>
+        <td style="text-align: right;">SUBTOTAL</td>
+        <td style="text-align: right; width: 100px;" id="pSubtotal">0.00</td>
+      </tr>
+      <tr>
+        <td style="text-align: right;">IGV (<span id="pIgvPercent">18%</span>)</td>
+        <td style="text-align: right;" id="pIgv">0.00</td>
+      </tr>
+      <tr class="total-row">
+        <td style="text-align: right;">TOTAL S/.</td>
+        <td style="text-align: right;" id="pTotal">0.00</td>
+      </tr>
+    </table>
+
+    <div class="print-footer">
+      Documento generado a través del Portal Corporativo J3K.<br>
+      La validez de esta cotización es de 15 días calendario a partir de su fecha de emisión.
+    </div>
+
+  </div>
+</div>
+
+<script>
+  let itemCount = 0;
+
+  function formatMoney(amount) {
+    return Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function agregarFila(desc = "", cant = 1, und = "und.", precio = 0) {
+    itemCount++;
+    const tbody = document.getElementById('tbodyItems');
+    const tr = document.createElement('tr');
+    tr.id = `row_${itemCount}`;
+    tr.innerHTML = `
+      <td class="center">${itemCount}</td>
+      <td><textarea class="item-desc" rows="2" placeholder="Descripción del servicio...">${desc}</textarea></td>
+      <td class="center"><input type="number" class="item-cant" value="${cant}" min="0.01" step="0.01" onchange="calcularTotales()"></td>
+      <td class="center"><input type="text" class="item-und" value="${und}" style="text-align:center;"></td>
+      <td class="right"><input type="number" class="item-precio" value="${precio}" min="0" step="0.01" onchange="calcularTotales()"></td>
+      <td class="right item-total" style="font-weight:bold;">0.00</td>
+      <td class="center"><button class="action-btn danger" onclick="eliminarFila(${itemCount})">X</button></td>
+    `;
+    tbody.appendChild(tr);
+    calcularTotales();
+  }
+
+  function eliminarFila(id) {
+    const row = document.getElementById(`row_${id}`);
+    if (row) {
+      row.remove();
+      renumerarFilas();
+      calcularTotales();
+    }
+  }
+
+  function renumerarFilas() {
+    const tbody = document.getElementById('tbodyItems');
+    let idx = 1;
+    for (let tr of tbody.rows) {
+      tr.cells[0].innerText = idx;
+      idx++;
+    }
+  }
+
+  function calcularTotales() {
+    const tbody = document.getElementById('tbodyItems');
+    let subtotal = 0;
+
+    for (let tr of tbody.rows) {
+      const cant = parseFloat(tr.querySelector('.item-cant').value) || 0;
+      const precio = parseFloat(tr.querySelector('.item-precio').value) || 0;
+      const totalLinea = cant * precio;
+      tr.querySelector('.item-total').innerText = formatMoney(totalLinea);
+      subtotal += totalLinea;
+    }
+
+    const aplicaIGV = document.getElementById('aplicaIGV').value === 'si';
+    const igv = aplicaIGV ? (subtotal * 0.18) : 0;
+    const total = subtotal + igv;
+
+    document.getElementById('lblSubtotal').innerText = formatMoney(subtotal);
+    document.getElementById('lblIgv').innerText = formatMoney(igv);
+    document.getElementById('lblTotal').innerText = formatMoney(total);
+  }
+
+  function generarPDF() {
+    // Trasladar datos al área de impresión
+    document.getElementById('pTitle').innerText = document.getElementById('numCotizacion').value || 'COTIZACIÓN S/N';
+    document.getElementById('pFecha').innerText = document.getElementById('fecha').value || '-';
+    document.getElementById('pEmpresa').innerText = document.getElementById('empresa').value || '-';
+    document.getElementById('pRuc').innerText = document.getElementById('ruc').value || '-';
+    document.getElementById('pContacto').innerText = document.getElementById('contacto').value || '-';
+    document.getElementById('pTelefono').innerText = document.getElementById('telefono').value || '-';
+    document.getElementById('pEmail').innerText = document.getElementById('email').value || '-';
+    document.getElementById('pReferencia').innerText = document.getElementById('referencia').value || '-';
+
+    const aplicaIGV = document.getElementById('aplicaIGV').value === 'si';
+    document.getElementById('pIgvPercent').innerText = aplicaIGV ? '18%' : '0%';
+
+    const tbody = document.getElementById('tbodyItems');
+    const pTbody = document.getElementById('pTableBody');
+    pTbody.innerHTML = ''; // Clear existing
+
+    let idx = 1;
+    for (let tr of tbody.rows) {
+      const desc = tr.querySelector('.item-desc').value;
+      const cant = tr.querySelector('.item-cant').value;
+      const und = tr.querySelector('.item-und').value;
+      const precio = tr.querySelector('.item-precio').value;
+      const total = tr.querySelector('.item-total').innerText;
+
+      if(desc.trim() !== "") {
+        pTbody.innerHTML += `
+          <tr>
+            <td style="text-align: center;">${idx}</td>
+            <td>${desc.replace(/\n/g, '<br>')}</td>
+            <td style="text-align: center;">${cant}</td>
+            <td style="text-align: center;">${und}</td>
+            <td style="text-align: right;">${formatMoney(precio)}</td>
+            <td style="text-align: right;">${total}</td>
+          </tr>
+        `;
+        idx++;
+      }
+    }
+
+    document.getElementById('pSubtotal').innerText = document.getElementById('lblSubtotal').innerText;
+    document.getElementById('pIgv').innerText = document.getElementById('lblIgv').innerText;
+    document.getElementById('pTotal').innerText = document.getElementById('lblTotal').innerText;
+
+    // Ejecutar impresión
+    window.print();
+  }
+
+  // Inicializar con 1 fila
+  window.onload = () => {
+    agregarFila();
+  };
+
+</script>
+
+</body>
+</html>

@@ -28,6 +28,14 @@
       "url": "/modules/contrato.html"
     },
     {
+      "id": "cotizacion",
+      "categoria": "VENTAS",
+      "titulo": "Generador de Cotizaciones",
+      "descripcion": "Cálculo dinámico y exportación a PDF de cotizaciones de servicios.",
+      "filename": "COTIZACION_DE_SERVICIOS_J3K.html",
+      "url": "/modules/cotizacion.html"
+    },
+    {
       "id": "boletas",
       "categoria": "RRHH",
       "titulo": "Generador de Boletas de Pago",
