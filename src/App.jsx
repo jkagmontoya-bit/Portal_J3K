@@ -206,12 +206,16 @@ function App() {
   }, [currentUser]);
 
   const loadViewerModule = async (mod) => {
-    try {
-      const response = await fetch(`data:${mod.mime};base64,${mod.b64}`);
-      const blob = await response.blob();
-      setViewerUrl(URL.createObjectURL(blob));
-    } catch (err) {
-      console.error("Error creating Blob from base64:", err);
+    if (mod.url) {
+      setViewerUrl(mod.url);
+    } else if (mod.b64) {
+      try {
+        const response = await fetch(`data:${mod.mime};base64,${mod.b64}`);
+        const blob = await response.blob();
+        setViewerUrl(URL.createObjectURL(blob));
+      } catch (err) {
+        console.error("Error creating Blob from base64:", err);
+      }
     }
   };
 
