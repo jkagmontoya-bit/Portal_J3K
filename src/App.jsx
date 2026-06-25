@@ -79,20 +79,41 @@ function WelcomeModal({ isOpen, onClose, userName }) {
   if (!isOpen) return null;
 
   return (
-    <>
-      <div className="login-overlay" style={{ display: 'flex', opacity: 1, zIndex: 9999 }} onClick={onClose}></div>
-      <div className="login-modal" style={{ display: 'flex', flexDirection: 'column', textAlign: 'center', zIndex: 10000, maxWidth: '450px', alignItems: 'center', background: 'var(--j3k-dark)', padding: '30px', borderRadius: '10px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '90%' }}>
-        <h2 style={{ color: 'var(--j3k-light)', marginBottom: '10px', fontSize: '24px', marginTop: 0 }}>¡Bienvenido al Equipo!</h2>
-        <h3 style={{ color: 'white', marginBottom: '20px', fontWeight: 500, fontSize: '18px' }}>{userName || 'Ingeniero'}</h3>
-        <div style={{ background: 'rgba(255,255,255,0.05)', padding: '20px', borderRadius: '12px', borderLeft: '4px solid var(--j3k-light)', fontStyle: 'italic', color: '#e0e0e0', marginBottom: '25px', lineHeight: '1.6', fontSize: '15px', width: '100%' }}>
+    <div className="login-overlay open" role="dialog" aria-modal="true" style={{ zIndex: 9999 }}>
+      <div className="login-card" style={{ textAlign: 'center', padding: '40px 30px' }}>
+        <div className="login-kicker" style={{ marginBottom: '10px' }}>J3K INGENIEROS</div>
+        <h2 style={{ color: 'var(--j3k-light)', marginBottom: '5px', fontSize: '26px', marginTop: 0 }}>¡Bienvenido al Equipo!</h2>
+        <h3 style={{ color: 'white', marginBottom: '25px', fontWeight: 500, fontSize: '18px' }}>{userName || 'Ingeniero'}</h3>
+        
+        <div style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '12px', borderLeft: '4px solid var(--j3k-light)', fontStyle: 'italic', color: '#e0e0e0', marginBottom: '30px', lineHeight: '1.6', fontSize: '15px', width: '100%', boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.2)' }}>
           "{quote}"
         </div>
-        <p style={{ color: '#aaa', fontSize: '14px', marginBottom: '25px' }}>Mucho ánimo para seguir adelante.<br/><b>J3K Ingenieros.</b></p>
-        <button className="auth-google-btn" onClick={onClose} style={{ justifyContent: 'center', width: '100%' }}>
-          <span className="auth-btn-text">Ir a mis módulos</span>
+        
+        <button onClick={onClose} style={{ 
+          background: 'linear-gradient(135deg, var(--j3k-primary), var(--j3k-light))',
+          color: '#111', 
+          border: 'none', 
+          borderRadius: '8px', 
+          padding: '15px 30px', 
+          width: '100%', 
+          cursor: 'pointer', 
+          fontWeight: 'bold', 
+          fontSize: '18px',
+          boxShadow: '0 4px 15px rgba(255, 215, 0, 0.3)',
+          transition: 'all 0.2s ease',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '10px'
+        }}
+        onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 215, 0, 0.5)'; }}
+        onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 215, 0, 0.3)'; }}
+        >
+          Ir a mis módulos
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
         </button>
       </div>
-    </>
+    </div>
   );
 }
 
