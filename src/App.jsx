@@ -60,8 +60,16 @@ function LoginModal({ isOpen, onClose, onLoginSuccess }) {
   );
 }
 
+function decodeUtf8(str) {
+  if (!str) return '';
+  try {
+    return decodeURIComponent(escape(str));
+  } catch(e) {
+    return str;
+  }
+}
+
 function Drawer({ isOpen, onClose, onLogout, modules = [], manifestError = '', onLoadModule }) {
-  // Group modules by category
   const categories = modules.reduce((acc, mod) => {
     if (!acc[mod.categoria]) acc[mod.categoria] = [];
     acc[mod.categoria].push(mod);
@@ -91,15 +99,17 @@ function Drawer({ isOpen, onClose, onLogout, modules = [], manifestError = '', o
             <p style={{ padding: '20px', color: 'white' }}>Cargando módulos...</p>
           ) : (
             Object.entries(categories).map(([cat, mods]) => (
-              <React.Fragment key={cat}>
-                <div className="drawer-category">{cat}</div>
-                {mods.map(mod => (
-                  <div key={mod.id} className="drawer-item" onClick={() => onLoadModule(mod)}>
-                    <div className="drawer-item-title">{mod.titulo}</div>
-                    <div className="drawer-item-desc">{mod.descripcion}</div>
-                  </div>
-                ))}
-              </React.Fragment>
+              <details key={cat} className="category" open={cat === 'CONTABILIDAD'}>
+                <summary>{decodeUtf8(cat)}</summary>
+                <div className="module-list">
+                  {mods.map(mod => (
+                    <button key={mod.id} type="button" className="module-card" onClick={() => onLoadModule(mod)}>
+                      <b>{decodeUtf8(mod.titulo)}</b>
+                      <span>{decodeUtf8(mod.descripcion)}</span>
+                    </button>
+                  ))}
+                </div>
+              </details>
             ))
           )}
         </div>
