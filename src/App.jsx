@@ -78,38 +78,64 @@ function WelcomeModal({ isOpen, onClose, userName }) {
   if (!isOpen) return null;
 
   return (
-    <div className="login-overlay open" role="dialog" aria-modal="true" style={{ zIndex: 9999 }}>
-      <div className="login-card" style={{ textAlign: 'center', padding: '40px 30px' }}>
-        <div className="login-kicker" style={{ marginBottom: '10px' }}>J3K INGENIEROS</div>
-        <h2 style={{ color: 'var(--j3k-light)', marginBottom: '5px', fontSize: '26px', marginTop: 0 }}>¡Bienvenido al Equipo!</h2>
-        <h3 style={{ color: 'white', marginBottom: '25px', fontWeight: 500, fontSize: '18px' }}>{userName || 'Ingeniero'}</h3>
+    <div className="login-overlay open" role="dialog" aria-modal="true" style={{ zIndex: 9999, backdropFilter: 'blur(8px)', backgroundColor: 'rgba(0, 77, 51, 0.4)' }}>
+      <div className="login-card" style={{ 
+        textAlign: 'center', 
+        padding: '40px 30px', 
+        background: 'linear-gradient(145deg, #ffffff, #f4fdf8)',
+        border: '1px solid rgba(139, 203, 107, 0.4)',
+        boxShadow: '0 25px 50px -12px rgba(0, 77, 51, 0.35)'
+      }}>
+        <div style={{
+          width: '64px', height: '64px', borderRadius: '50%', background: 'var(--j3k-dark)', 
+          display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px',
+          boxShadow: '0 10px 25px rgba(0, 77, 51, 0.3)'
+        }}>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--j3k-light)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        </div>
         
-        <div style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '12px', borderLeft: '4px solid var(--j3k-light)', fontStyle: 'italic', color: '#e0e0e0', marginBottom: '30px', lineHeight: '1.6', fontSize: '15px', width: '100%', boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.2)' }}>
+        <div className="login-kicker" style={{ marginBottom: '8px', color: 'var(--j3k-dark)' }}>J3K INGENIEROS</div>
+        <h2 style={{ color: 'var(--j3k-dark)', marginBottom: '5px', fontSize: '28px', marginTop: 0, fontWeight: 900, letterSpacing: '-0.5px' }}>¡Bienvenido al Equipo!</h2>
+        <h3 style={{ color: '#475569', marginBottom: '30px', fontWeight: 600, fontSize: '18px' }}>{userName || 'Ingeniero'}</h3>
+        
+        <div style={{ 
+          background: 'rgba(139, 203, 107, 0.1)', 
+          padding: '24px', 
+          borderRadius: '16px', 
+          borderLeft: '4px solid var(--j3k-dark)', 
+          fontStyle: 'italic', 
+          color: '#334155', 
+          marginBottom: '35px', 
+          lineHeight: '1.6', 
+          fontSize: '15px', 
+          width: '100%', 
+          boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.02)' 
+        }}>
           "{quote}"
         </div>
         
         <button onClick={onClose} style={{ 
-          background: 'linear-gradient(135deg, var(--j3k-primary), var(--j3k-light))',
-          color: '#111', 
+          background: 'linear-gradient(135deg, var(--j3k-dark), #065f41)',
+          color: 'white', 
           border: 'none', 
-          borderRadius: '8px', 
-          padding: '15px 30px', 
+          borderRadius: '12px', 
+          padding: '16px 30px', 
           width: '100%', 
           cursor: 'pointer', 
           fontWeight: 'bold', 
-          fontSize: '18px',
-          boxShadow: '0 4px 15px rgba(255, 215, 0, 0.3)',
-          transition: 'all 0.2s ease',
+          fontSize: '16px',
+          boxShadow: '0 8px 20px rgba(0, 77, 51, 0.3)',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: '10px'
+          gap: '12px'
         }}
-        onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 215, 0, 0.5)'; }}
-        onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 215, 0, 0.3)'; }}
+        onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 12px 25px rgba(0, 77, 51, 0.4)'; e.currentTarget.style.background = 'linear-gradient(135deg, #065f41, var(--j3k-dark))'; }}
+        onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 77, 51, 0.3)'; e.currentTarget.style.background = 'linear-gradient(135deg, var(--j3k-dark), #065f41)'; }}
         >
           Ir a mis módulos
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
         </button>
       </div>
     </div>
