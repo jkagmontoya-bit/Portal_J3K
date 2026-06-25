@@ -80,9 +80,9 @@ function WelcomeModal({ isOpen, onClose, userName }) {
 
   return (
     <>
-      <div className="login-overlay" style={{ display: 'flex' }} onClick={onClose}></div>
-      <div className="login-modal" style={{ display: 'flex', flexDirection: 'column', textAlign: 'center', zIndex: 10000, maxWidth: '450px', alignItems: 'center' }}>
-        <h2 style={{ color: 'var(--j3k-light)', marginBottom: '10px', fontSize: '24px' }}>¡Bienvenido al Equipo!</h2>
+      <div className="login-overlay" style={{ display: 'flex', opacity: 1, zIndex: 9999 }} onClick={onClose}></div>
+      <div className="login-modal" style={{ display: 'flex', flexDirection: 'column', textAlign: 'center', zIndex: 10000, maxWidth: '450px', alignItems: 'center', background: 'var(--j3k-dark)', padding: '30px', borderRadius: '10px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '90%' }}>
+        <h2 style={{ color: 'var(--j3k-light)', marginBottom: '10px', fontSize: '24px', marginTop: 0 }}>¡Bienvenido al Equipo!</h2>
         <h3 style={{ color: 'white', marginBottom: '20px', fontWeight: 500, fontSize: '18px' }}>{userName || 'Ingeniero'}</h3>
         <div style={{ background: 'rgba(255,255,255,0.05)', padding: '20px', borderRadius: '12px', borderLeft: '4px solid var(--j3k-light)', fontStyle: 'italic', color: '#e0e0e0', marginBottom: '25px', lineHeight: '1.6', fontSize: '15px', width: '100%' }}>
           "{quote}"
