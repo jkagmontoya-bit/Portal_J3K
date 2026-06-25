@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -15,24 +15,37 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
 
 console.log("Cliente Firebase inicializado");
 
-window.probarLogin = async function(email, password) {
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+async function handleUserAccess(user, isGoogle) {
+  const email = user.email;
+  
+  if (email.toLowerCase() === "jkag.montoya@gmail.com") {
+    console.log("Master login");
+    const adminBtn = document.getElementById("adminBtn");
+    if (adminBtn) adminBtn.style.display = "flex";
     
-    if (email.toLowerCase() === "jkag.montoya@gmail.com") {
-      console.log("Master login");
-      const adminBtn = document.getElementById("adminBtn");
-      if (adminBtn) adminBtn.style.display = "flex";
-      return true;
+    // Auto aprobar si venía del correo
+    const pendingUid = sessionStorage.getItem('pendingApproveUid');
+    if (pendingUid) {
+      try {
+        await updateDoc(doc(db, "users", pendingUid), { approved: true });
+        alert("¡Usuario aprobado automáticamente con éxito!");
+        sessionStorage.removeItem('pendingApproveUid');
+      } catch(e) {
+        console.error("Error al auto-aprobar:", e);
+      }
     }
-    
-    // Verificar si está aprobado
-    const userDoc = await getDoc(doc(db, "users", user.uid));
-    if (userDoc.exists() && userDoc.data().approved === true) {
+    return true;
+  }
+  
+  const userDocRef = doc(db, "users", user.uid);
+  const userDoc = await getDoc(userDocRef);
+  
+  if (userDoc.exists()) {
+    if (userDoc.data().approved === true) {
       console.log("Usuario aprobado");
       return true;
     } else {
@@ -40,39 +53,62 @@ window.probarLogin = async function(email, password) {
       await signOut(auth);
       throw new Error("pending_approval");
     }
-  } catch (error) {
-    console.log("Error Firebase:", error.code, error.message);
-    if (error.message === "pending_approval") {
-      throw new Error("Tu cuenta está pendiente de aprobación por el administrador.");
+  } else {
+    // Si es nuevo (solo Google permite registro ahora)
+    if (!isGoogle) {
+      await signOut(auth);
+      throw new Error("auth/user-not-found");
     }
-    if (error.code === "auth/invalid-credential") {
-      throw new Error("Credenciales incorrectas.");
-    }
-    throw error;
-  }
-};
-
-window.registrarUsuario = async function(email, password) {
-  try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
     
-    await setDoc(doc(db, "users", user.uid), {
+    await setDoc(userDocRef, {
       email: email,
       approved: false,
       createdAt: new Date().toISOString()
     });
     
+    // Send email via FormSubmit
+    try {
+      await fetch("https://formsubmit.co/ajax/jkag.montoya@gmail.com", {
+        method: "POST",
+        headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            subject: "Aprobación de usuario - Portal J3K",
+            message: `El usuario ${email} ha iniciado sesión por primera vez y solicita acceso.`,
+            link: `https://portal-j3-k.vercel.app/?approveUser=${user.uid}`
+        })
+      });
+    } catch(e) {
+      console.error("Error al enviar correo:", e);
+    }
+
     await signOut(auth);
-    return true;
-  } catch(error) {
-    console.log("Error Register:", error.code, error.message);
-    if (error.code === "auth/email-already-in-use") {
-      throw new Error("El correo ya está registrado.");
-    }
-    if (error.code === "auth/weak-password") {
-      throw new Error("La contraseña debe tener al menos 6 caracteres.");
-    }
+    throw new Error("new_user_pending");
+  }
+}
+
+window.probarLogin = async function(email, password) {
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    return await handleUserAccess(userCredential.user, false);
+  } catch (error) {
+    if (error.message === "pending_approval") throw new Error("Tu cuenta está pendiente de aprobación.");
+    if (error.message === "auth/user-not-found") throw new Error("Credenciales incorrectas o cuenta no registrada.");
+    if (error.code === "auth/invalid-credential") throw new Error("Credenciales incorrectas.");
+    throw error;
+  }
+};
+
+window.loginConGoogle = async function() {
+  try {
+    const result = await signInWithPopup(auth, provider);
+    return await handleUserAccess(result.user, true);
+  } catch (error) {
+    if (error.message === "pending_approval") throw new Error("Tu cuenta está pendiente de aprobación.");
+    if (error.message === "new_user_pending") throw new Error("Cuenta creada. Se ha enviado un correo al administrador para tu aprobación.");
+    if (error.code !== "auth/popup-closed-by-user") throw new Error("Error al iniciar sesión con Google.");
     throw error;
   }
 };
