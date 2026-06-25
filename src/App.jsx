@@ -60,7 +60,14 @@ function LoginModal({ isOpen, onClose, onLoginSuccess }) {
   );
 }
 
-function Drawer({ isOpen, onClose, onLogout }) {
+function Drawer({ isOpen, onClose, onLogout, modules = [], onLoadModule }) {
+  // Group modules by category
+  const categories = modules.reduce((acc, mod) => {
+    if (!acc[mod.categoria]) acc[mod.categoria] = [];
+    acc[mod.categoria].push(mod);
+    return acc;
+  }, {});
+
   return (
     <>
       {isOpen && <div className="backdrop" onClick={onClose} style={{ display: 'block' }}></div>}
@@ -75,7 +82,21 @@ function Drawer({ isOpen, onClose, onLogout }) {
           <button className="close-btn" onClick={onClose}>×</button>
         </div>
         <div className="drawer-body">
-          <p style={{ padding: '20px', color: 'white' }}>Los módulos se cargarán aquí...</p>
+          {Object.keys(categories).length === 0 ? (
+            <p style={{ padding: '20px', color: 'white' }}>Cargando módulos...</p>
+          ) : (
+            Object.entries(categories).map(([cat, mods]) => (
+              <React.Fragment key={cat}>
+                <div className="drawer-category">{cat}</div>
+                {mods.map(mod => (
+                  <div key={mod.id} className="drawer-item" onClick={() => onLoadModule(mod)}>
+                    <div className="drawer-item-title">{mod.titulo}</div>
+                    <div className="drawer-item-desc">{mod.descripcion}</div>
+                  </div>
+                ))}
+              </React.Fragment>
+            ))
+          )}
         </div>
       </aside>
     </>
@@ -88,24 +109,30 @@ function App() {
   const [showDrawer, setShowDrawer] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [viewerUrl, setViewerUrl] = useState('');
+  const [modules, setModules] = useState([]);
 
   useEffect(() => {
     fetch('/manifest.json')
       .then(res => res.json())
       .then(async data => {
         if (data.modules && data.modules.length > 0) {
+          setModules(data.modules);
           const inicio = data.modules[0];
-          try {
-            const response = await fetch(`data:${inicio.mime};base64,${inicio.b64}`);
-            const blob = await response.blob();
-            setViewerUrl(URL.createObjectURL(blob));
-          } catch (err) {
-            console.error("Error creating Blob from base64:", err);
-          }
+          loadViewerModule(inicio);
         }
       })
       .catch(err => console.error("Error loading manifest:", err));
   }, []);
+
+  const loadViewerModule = async (mod) => {
+    try {
+      const response = await fetch(`data:${mod.mime};base64,${mod.b64}`);
+      const blob = await response.blob();
+      setViewerUrl(URL.createObjectURL(blob));
+    } catch (err) {
+      console.error("Error creating Blob from base64:", err);
+    }
+  };
 
   const handleRequestLogin = () => {
     if (currentUser) setShowDrawer(true);
@@ -114,6 +141,11 @@ function App() {
 
   const handleLogout = () => {
     logout();
+    setShowDrawer(false);
+  };
+
+  const handleLoadModule = (mod) => {
+    loadViewerModule(mod);
     setShowDrawer(false);
   };
 
@@ -133,6 +165,8 @@ function App() {
         isOpen={showDrawer} 
         onClose={() => setShowDrawer(false)} 
         onLogout={handleLogout}
+        modules={modules}
+        onLoadModule={handleLoadModule}
       />
     </div>
   );
