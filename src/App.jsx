@@ -87,6 +87,26 @@ function App() {
   const [showLogin, setShowLogin] = useState(false);
   const [showDrawer, setShowDrawer] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [viewerUrl, setViewerUrl] = useState('');
+
+  useEffect(() => {
+    fetch('/manifest.json')
+      .then(res => res.json())
+      .then(data => {
+        if (data.modules && data.modules.length > 0) {
+          const inicio = data.modules[0];
+          const byteCharacters = atob(inicio.b64);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          const blob = new Blob([byteArray], { type: inicio.mime });
+          setViewerUrl(URL.createObjectURL(blob));
+        }
+      })
+      .catch(err => console.error("Error loading manifest:", err));
+  }, []);
 
   const handleRequestLogin = () => {
     if (currentUser) setShowDrawer(true);
@@ -100,7 +120,7 @@ function App() {
 
   return (
     <div className="app">
-      <iframe id="viewer" title="Portal Corporativo J3K" style={{ width: '100%', height: '100%', border: 'none' }}></iframe>
+      <iframe id="viewer" src={viewerUrl} title="Portal Corporativo J3K" style={{ width: '100%', height: '100%', border: 'none' }}></iframe>
       <FloatingTools 
         onRequestLogin={handleRequestLogin} 
         onOpenAdmin={() => setShowAdmin(true)} 
