@@ -27,14 +27,7 @@
       "filename": "CONTRATO DE ARRENDAMIENTO VEHICULAR_EJECUTIVO_J3K.html",
       "url": "/modules/contrato.html"
     },
-    {
-      "id": "cotizacion",
-      "categoria": "VENTAS",
-      "titulo": "Generador de Cotizaciones",
-      "descripcion": "Cálculo dinámico y exportación a PDF de cotizaciones de servicios.",
-      "filename": "COTIZACION_DE_SERVICIOS_J3K.html",
-      "url": "/modules/cotizacion.html"
-    },
+
     {
       "id": "boletas",
       "categoria": "RRHH",
@@ -42,6 +35,14 @@
       "descripcion": "CÃ¡lculo de boleta, descuentos, beneficios y costo laboral.",
       "filename": "GENERADOR DE BOLETAS DE PAGO J3K_EJECUTIVO_J3K.html",
       "url": "/modules/boletas.html"
+    },
+    {
+      "id": "cotizacion",
+      "categoria": "CONTABILIDAD",
+      "titulo": "Generador de Cotizaciones",
+      "descripcion": "Cálculo dinámico y exportación a PDF de cotizaciones de servicios.",
+      "filename": "COTIZACION_DE_SERVICIOS_J3K.html",
+      "url": "/modules/cotizacion.html"
     },
     {
       "id": "expedientes",
