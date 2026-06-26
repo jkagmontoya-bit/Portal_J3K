@@ -1021,6 +1021,10 @@
     }
   }
 
+  function aplicarTipoUI(tipo) {
+    toggleUITabs(tipo === 'simple');
+  }
+
   function abrirEdicion(id) {
     const cot = DB.find(c => c.id === id);
     if(!cot) return;
