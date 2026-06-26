@@ -1137,16 +1137,16 @@
       pagos: edPagos.root.innerHTML,
       banco: edBanco.root.innerHTML,
       tipoCotizacion: currentDoc.tipoCotizacion || 'extendida',
-      simpContacto: document.getElementById('simp-contacto')?.value || '',
-      simpTelefono: document.getElementById('simp-telefono')?.value || '',
-      simpEmail: document.getElementById('simp-email')?.value || '',
-      simpReferencia: document.getElementById('simp-referencia')?.value || '',
-      simpMoneda: document.getElementById('simp-moneda')?.value || '',
-      simpEntrega: document.getElementById('simp-entrega')?.value || '',
-      simpPago: document.getElementById('simp-pago')?.value || '',
-      simpValidez: document.getElementById('simp-validez')?.value || '',
-      simpContactarse: document.getElementById('simp-contactarse')?.value || '',
-      simpObs: document.getElementById('simp-obs')?.value || ''
+      simpContacto: document.getElementById('simp-contacto') ? document.getElementById('simp-contacto').value : '',
+      simpTelefono: document.getElementById('simp-telefono') ? document.getElementById('simp-telefono').value : '',
+      simpEmail: document.getElementById('simp-email') ? document.getElementById('simp-email').value : '',
+      simpReferencia: document.getElementById('simp-referencia') ? document.getElementById('simp-referencia').value : '',
+      simpMoneda: document.getElementById('simp-moneda') ? document.getElementById('simp-moneda').value : '',
+      simpEntrega: document.getElementById('simp-entrega') ? document.getElementById('simp-entrega').value : '',
+      simpPago: document.getElementById('simp-pago') ? document.getElementById('simp-pago').value : '',
+      simpValidez: document.getElementById('simp-validez') ? document.getElementById('simp-validez').value : '',
+      simpContactarse: document.getElementById('simp-contactarse') ? document.getElementById('simp-contactarse').value : '',
+      simpObs: document.getElementById('simp-obs') ? document.getElementById('simp-obs').value : ''
     };
     
     data.historial = currentDoc.historial || [];
