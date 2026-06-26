@@ -850,6 +850,17 @@
      document.getElementById('modal-bitacora').style.display = 'flex';
   }
 
+
+  function imprimirDesdeDashboard(id) {
+    abrirEdicion(id);
+    // Add a slight delay to allow rendering and Quill to populate
+    setTimeout(() => {
+      ejecutarImpresion();
+      document.getElementById('view-editor').classList.remove('active');
+      document.getElementById('view-dashboard').classList.add('active');
+    }, 500);
+  }
+
   function renderDashboard() {
     const tbody = document.getElementById('dbTbody');
     tbody.innerHTML = '';
@@ -865,6 +876,9 @@
       const tipoTag = (!cot.isExternal && cot.tipoCotizacion === 'simple') ? `<span class="badge" style="background:#bae6fd; color:#0369a1; margin-right:5px;">[SIMPLE]</span>` : 
                       (!cot.isExternal) ? `<span class="badge" style="background:#dcfce7; color:#166534; margin-right:5px;">[EXTENDIDA]</span>` : '';
       const editBtn = cot.isExternal ? '' : `<button onclick="abrirEdicion('${cot.id}')">Editar</button>`;
+      const printBtn = cot.isExternal ? '' : `<button class="alt" style="background:#0f172a; color:white; border-color:#0f172a;" onclick="imprimirDesdeDashboard('${cot.id}')">🖨️ Imprimir</button>`;
+      const tooltip = cot.isExternal ? 'Descargar PDF subido' : 'Descargar Sustento (TDR/Correo)';
+      const sustentoBtnHtml = cot.sustento ? `<button class="alt" onclick="descargarSustento('${cot.id}')" title="${tooltip}">📎 ${cot.isExternal ? 'PDF' : 'Sustento'}</button>` : '';
       
       tr.innerHTML = `
         <td>
@@ -876,7 +890,8 @@
         <td>S/ ${formatMoney(cot.total)}</td>
         <td>
           ${editBtn}
-          ${sustentoBtn}
+          ${printBtn}
+          ${sustentoBtnHtml}
           <button class="danger" onclick="iniciarEliminacion('${cot.id}')">X</button>
         </td>
       `;
