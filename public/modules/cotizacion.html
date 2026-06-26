@@ -851,15 +851,18 @@
   }
 
 
-  function imprimirDesdeDashboard(id) {
-    abrirEdicion(id);
-    // Add a slight delay to allow rendering and Quill to populate
-    setTimeout(() => {
+  window.imprimirDesdeDashboard = function(id) {
+    try {
+      abrirEdicion(id);
       ejecutarImpresion();
+      // Vuelve al dashboard inmediatamente, el dialogo de impresion pausa el navegador
       document.getElementById('view-editor').classList.remove('active');
       document.getElementById('view-dashboard').classList.add('active');
-    }, 500);
-  }
+    } catch(e) {
+      alert("Error al imprimir: " + e.message);
+      console.error(e);
+    }
+  };
 
   function renderDashboard() {
     const tbody = document.getElementById('dbTbody');
@@ -1252,12 +1255,24 @@
     }
   }
 
-  function descargarSustento(id) {
-    const cot = DB.find(c => c.id === id);
-    if(cot && cot.sustento && cot.sustento.dataUrl) {
-      const a = document.createElement('a'); a.href = cot.sustento.dataUrl; a.download = cot.sustento.name || 'Sustento.pdf'; a.click();
-    } else alert("No hay archivo adjunto.");
-  }
+  window.descargarSustento = function(id) {
+    try {
+      const cot = DB.find(c => c.id === id);
+      if(cot && cot.sustento && cot.sustento.dataUrl) {
+        const a = document.createElement('a'); 
+        a.href = cot.sustento.dataUrl; 
+        a.download = cot.sustento.name || 'Sustento.pdf'; 
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } else {
+        alert("No hay archivo adjunto.");
+      }
+    } catch(e) {
+      alert("Error al descargar: " + e.message);
+      console.error(e);
+    }
+  };
 
   // --- TABLAS DINAMICAS LOGIC ---
   function formatMoney(amount) { return Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
