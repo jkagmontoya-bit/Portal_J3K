@@ -1045,16 +1045,26 @@
     edBanco.root.innerHTML = cot.banco || '';
     
     // Load Simple Fields
-    document.getElementById('simp-contacto').value = cot.simpContacto || '';
-    document.getElementById('simp-telefono').value = cot.simpTelefono || '';
-    document.getElementById('simp-email').value = cot.simpEmail || '';
-    document.getElementById('simp-referencia').value = cot.simpReferencia || '';
-    document.getElementById('simp-moneda').value = cot.simpMoneda || 'Nuevos Soles';
-    document.getElementById('simp-entrega').value = cot.simpEntrega || 'Según pedido';
-    document.getElementById('simp-pago').value = cot.simpPago || '';
-    document.getElementById('simp-validez').value = cot.simpValidez || '07 días';
-    document.getElementById('simp-contactarse').value = cot.simpContactarse || 'Diaz Varas, Kendy Eduardo';
-    document.getElementById('simp-obs').value = cot.simpObs || '';
+    const el_contacto = document.getElementById('simp-contacto');
+    if(el_contacto) el_contacto.value = cot.simpContacto || '';
+    const el_telefono = document.getElementById('simp-telefono');
+    if(el_telefono) el_telefono.value = cot.simpTelefono || '';
+    const el_email = document.getElementById('simp-email');
+    if(el_email) el_email.value = cot.simpEmail || '';
+    const el_referencia = document.getElementById('simp-referencia');
+    if(el_referencia) el_referencia.value = cot.simpReferencia || '';
+    const el_moneda = document.getElementById('simp-moneda');
+    if(el_moneda) el_moneda.value = cot.simpMoneda || 'Nuevos Soles';
+    const el_entrega = document.getElementById('simp-entrega');
+    if(el_entrega) el_entrega.value = cot.simpEntrega || 'Según pedido';
+    const el_pago = document.getElementById('simp-pago');
+    if(el_pago) el_pago.value = cot.simpPago || '';
+    const el_validez = document.getElementById('simp-validez');
+    if(el_validez) el_validez.value = cot.simpValidez || '07 días';
+    const el_contactarse = document.getElementById('simp-contactarse');
+    if(el_contactarse) el_contactarse.value = cot.simpContactarse || 'Diaz Varas, Kendy Eduardo';
+    const el_obs = document.getElementById('simp-obs');
+    if(el_obs) el_obs.value = cot.simpObs || '';
 
     currentDoc.tipoCotizacion = cot.tipoCotizacion || 'extendida';
     aplicarTipoUI(currentDoc.tipoCotizacion);
@@ -1112,20 +1122,20 @@
       pagos: edPagos.root.innerHTML,
       banco: edBanco.root.innerHTML,
       tipoCotizacion: currentDoc.tipoCotizacion || 'extendida',
-      simpContacto: document.getElementById('simp-contacto').value,
-      simpTelefono: document.getElementById('simp-telefono').value,
-      simpEmail: document.getElementById('simp-email').value,
-      simpReferencia: document.getElementById('simp-referencia').value,
-      simpMoneda: document.getElementById('simp-moneda').value,
-      simpEntrega: document.getElementById('simp-entrega').value,
-      simpPago: document.getElementById('simp-pago').value,
-      simpValidez: document.getElementById('simp-validez').value,
-      simpContactarse: document.getElementById('simp-contactarse').value,
-      simpObs: document.getElementById('simp-obs').value
+      simpContacto: document.getElementById('simp-contacto')?.value || '',
+      simpTelefono: document.getElementById('simp-telefono')?.value || '',
+      simpEmail: document.getElementById('simp-email')?.value || '',
+      simpReferencia: document.getElementById('simp-referencia')?.value || '',
+      simpMoneda: document.getElementById('simp-moneda')?.value || '',
+      simpEntrega: document.getElementById('simp-entrega')?.value || '',
+      simpPago: document.getElementById('simp-pago')?.value || '',
+      simpValidez: document.getElementById('simp-validez')?.value || '',
+      simpContactarse: document.getElementById('simp-contactarse')?.value || '',
+      simpObs: document.getElementById('simp-obs')?.value || ''
     };
     
     data.historial = currentDoc.historial || [];
-    const actionName = (idx >= 0) ? 'Modificó la propuesta' : 'Creación inicial';
+    const actionName = (!isNew) ? 'Modificó la propuesta' : 'Creación inicial';
     data.historial.push({ user: localStorage.getItem('J3K_USER_NAME') || 'Sistema', action: actionName, date: new Date().toLocaleString() });
 
     if(isNew) DB.push(data);
