@@ -818,7 +818,7 @@ function renderWorkSteps(){
               });
               return `
                 <label>Cotización Vinculada</label>
-                <select style="width:100%; border:1px solid #cbd5e1; border-radius:4px; padding:4px;" onchange="setObs(${i}, this.value)">
+                <select style="width:100%; border:1px solid #cbd5e1; border-radius:4px; padding:4px;" onchange="confirmCotizacion(${i}, this)">
                   ${opts}
                 </select>
                 <div class="mini">Elige la propuesta base.</div>
@@ -842,6 +842,22 @@ function renderWorkSteps(){
     renderFiles(i);
   });
 }
+window.confirmCotizacion = function(i, selectEl) {
+  const val = selectEl.value;
+  if(!val) {
+    state.processes[currentProcess].steps[i].obs = '';
+    save(); render();
+    return;
+  }
+  if(confirm("¿Confirmas que deseas vincular la cotización " + val + " y dar por cumplido este paso?")) {
+    state.processes[currentProcess].steps[i].obs = val;
+    state.processes[currentProcess].steps[i].ok = true;
+    save(); render();
+  } else {
+    selectEl.value = state.processes[currentProcess].steps[i].obs || '';
+  }
+};
+
 function setOk(i,v){ state.processes[currentProcess].steps[i].ok = v==="si"; save(); render(); }
 function setNA(i,checked){ const st=state.processes[currentProcess].steps[i]; st.na=checked; if(checked) st.ok=true; save(); render(); }
 function setObs(i,v){ state.processes[currentProcess].steps[i].obs=v; save(); renderLite(); }
