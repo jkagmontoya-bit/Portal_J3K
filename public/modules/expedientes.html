@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>J3K | Expedientes | Suite documental ejecutiva</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <style>
     * { box-sizing: border-box; }
     :root {
@@ -520,7 +521,13 @@ aside .upload-box, aside .notice, aside .custom-row span {
         </div>
         <div>
           <div class="panel">
-            <div class="panel-title"><span>Datos del expediente</span><span class="pill warn" id="statusPill">En proceso</span></div>
+            <div class="panel-title">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span>Datos del expediente</span>
+                <span class="pill warn" id="statusPill">En proceso</span>
+              </div>
+              <button type="button" class="alt" id="btnLinkCotizacion" style="display:none; background:#10b981; color:white; border-color:#10b981; padding:4px 12px;" onclick="openCotizacionModal()">Vincular Cotización</button>
+            </div>
             <div class="progress-box"><div class="bar"><div id="progressBar"></div></div><div class="pct" id="progressPct">0%</div></div>
             <div id="alerts"></div>
             <div class="form-grid">
@@ -560,6 +567,22 @@ aside .upload-box, aside .notice, aside .custom-row span {
         <table class="doc-table"><thead><tr><th>Proceso</th><th>Regla</th><th>Condición</th><th>Acción del módulo</th><th>Observación</th></tr></thead><tbody id="ruleRows"></tbody></table>
       </div>
     </div>
+    
+    <div id="cotizacionModal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center;">
+      <div style="background:white; padding:24px; border-radius:12px; width:90%; max-width:850px; max-height:85vh; display:flex; flex-direction:column; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+        <h2 style="margin-top:0; color:var(--dark); margin-bottom:20px; font-size:20px;">Cotizaciones Aprobadas</h2>
+        <div style="overflow-y:auto; flex:1; margin-bottom:20px;">
+          <table class="doc-table" style="width:100%;">
+            <thead><tr><th>CUI</th><th>Cliente (Proyecto)</th><th>Total Aprobado</th><th>Pdte. de Facturar</th><th>Acción</th></tr></thead>
+            <tbody id="cotizacionesListBody"></tbody>
+          </table>
+        </div>
+        <div style="text-align:right;">
+          <button type="button" class="alt" style="padding:8px 24px;" onclick="document.getElementById('cotizacionModal').style.display='none'">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -642,6 +665,10 @@ function fillGeneral(){
   ["expediente","responsable","tercero","docTercero","monto","proyecto","descripcion"].forEach(id => {
     const el = document.getElementById(id); if(el) el.value = g[id] || "";
   });
+  const btnLink = document.getElementById("btnLinkCotizacion");
+  if(btnLink) {
+    btnLink.style.display = (currentProcess === 'ventas') ? 'inline-block' : 'none';
+  }
 }
 
 function processPct(k){
@@ -782,13 +809,32 @@ function renderWorkSteps(){
           <label style="margin-top:7px;"><input type="checkbox" ${st.na?"checked":""} onchange="setNA(${i}, this.checked)" style="width:auto;"> No aplica</label>
         </div>
         <div>
+          ${(currentProcess === 'ventas' && i === 0) ? 
+            (() => {
+              let opts = '<option value="">-- Seleccionar Cotización --</option>';
+              (window.cotizaciones_db || []).filter(c => !c.deletedAt).forEach(c => {
+                 const label = c.cui + ' - ' + (c.proyecto ? c.proyecto.substring(0,30) : '') + ' - S/ ' + money(c.total);
+                 opts += `<option value="${c.cui}" ${st.obs === c.cui ? 'selected' : ''}>${label}</option>`;
+              });
+              return `
+                <label>Cotización Vinculada</label>
+                <select style="width:100%; border:1px solid #cbd5e1; border-radius:4px; padding:4px;" onchange="setObs(${i}, this.value)">
+                  ${opts}
+                </select>
+                <div class="mini">Elige la propuesta base.</div>
+              `;
+            })() 
+          : `
           <label>Archivos</label>
           <input type="file" multiple onchange="addFiles(${i}, this.files); this.value='';" aria-label="Cargar archivo de sustento">
           <div class="mini">PDF, imagen, Excel, Word, XML, CDR, etc.</div>
+          `}
         </div>
       </div>
       <div class="step-bottom">
-        <div><label>Observación / referencia</label><textarea oninput="setObs(${i}, this.value)" placeholder="Ej.: factura, OC, voucher, correo, observación.">${esc(st.obs||"")}</textarea></div>
+        ${(currentProcess === 'ventas' && i === 0) ? '' : 
+        `<div><label>Observación / referencia</label><textarea oninput="setObs(${i}, this.value)" placeholder="Ej.: factura, OC, voucher, correo, observación.">${esc(st.obs||"")}</textarea></div>`
+        }
         <div><label>Estado</label><div style="padding-top:7px;">${stepStatus(currentProcess,i)}</div></div>
       </div>
       <div class="file-list" id="files-${i}"></div>`;
@@ -946,8 +992,120 @@ function init(){
   document.getElementById("mes").value=state.header.mes||"Junio";
   const keys=Object.keys(CONFIG.processes);
   currentProcess=keys[0];
-  render();
+  
+  if (typeof localforage !== 'undefined') {
+    localforage.getItem('cotizaciones_db').then(db => {
+      window.cotizaciones_db = db || [];
+      render();
+    }).catch(e => {
+      window.cotizaciones_db = [];
+      render();
+    });
+  } else {
+    window.cotizaciones_db = [];
+    render();
+  }
 }
+
+// --- COTIZACIONES INTEGRATION ---
+if (typeof localforage !== 'undefined') {
+  localforage.config({ name: 'J3K_Cotizaciones' });
+}
+
+let currentQuotes = [];
+
+async function openCotizacionModal() {
+  if (typeof localforage === 'undefined') {
+    alert("Error: No se pudo cargar localforage.");
+    return;
+  }
+  try {
+    const db = await localforage.getItem('cotizaciones_db');
+    if(!db || !db.quotes || db.quotes.length === 0) {
+      alert("No hay cotizaciones registradas en el repositorio.");
+      return;
+    }
+    const aprobadas = db.quotes.filter(q => q.estado === "APROBADA");
+    if(aprobadas.length === 0) {
+      alert("No se encontraron cotizaciones con estado APROBADA.");
+      return;
+    }
+    currentQuotes = aprobadas;
+    const tbody = document.getElementById("cotizacionesListBody");
+    tbody.innerHTML = "";
+    aprobadas.forEach((q, idx) => {
+      const facturado = Number(q.montoFacturado) || 0;
+      const total = Number(q.total) || 0;
+      let pendiente = total - facturado;
+      if (pendiente < 0) pendiente = 0;
+      
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><span class="pill" style="background:#f1f5f9; color:#475569;">${esc(q.cui)}</span></td>
+        <td><b>${esc(q.cliente)}</b><br><small style="color:#64748b;">${esc(q.proyecto)}</small></td>
+        <td>S/ ${money(total)}</td>
+        <td><b style="color:${pendiente > 0 ? '#10b981' : '#ef4444'}">S/ ${money(pendiente)}</b></td>
+        <td>
+          <button type="button" class="alt" style="background:var(--dark); color:white; border:none;" onclick="selectCotizacion(${idx})">Vincular</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+    document.getElementById("cotizacionModal").style.display = "flex";
+  } catch(e) {
+    console.error(e);
+    alert("Error cargando el repositorio de cotizaciones.");
+  }
+}
+
+async function selectCotizacion(idx) {
+  const q = currentQuotes[idx];
+  const facturado = Number(q.montoFacturado) || 0;
+  const total = Number(q.total) || 0;
+  let pendiente = total - facturado;
+  if(pendiente <= 0) {
+    const resp = confirm("Esta cotización ya no tiene saldo pendiente por facturar (S/ 0.00). ¿Deseas vincularla de todas formas?");
+    if(!resp) return;
+  }
+
+  const m = prompt(`Vincular cotización: ${q.cui}\n\nSaldo Pendiente Aprobado: S/ ${money(pendiente)}\n\nPor favor, ingresa el monto (S/) que se va a FACTURAR en este expediente:`, pendiente > 0 ? money(pendiente) : "0.00");
+  if(m === null) return; // cancelado
+  
+  const montoFactura = parseFloat(m);
+  if(isNaN(montoFactura) || montoFactura < 0) {
+    alert("Por favor ingresa un monto válido mayor o igual a cero.");
+    return;
+  }
+
+  // Llenar los datos generales
+  document.getElementById("tercero").value = q.cliente || "";
+  document.getElementById("docTercero").value = q.ruc || "";
+  document.getElementById("proyecto").value = (q.proyecto || "") + " (Ref: " + q.cui + ")";
+  document.getElementById("monto").value = montoFactura.toFixed(2);
+  
+  if(!document.getElementById("descripcion").value) {
+    document.getElementById("descripcion").value = "Facturación según propuesta aprobada " + q.cui;
+  }
+  
+  saveCurrent();
+
+  // Actualizar la cotización en la DB para restar el saldo
+  try {
+    const db = await localforage.getItem('cotizaciones_db');
+    const dbQuote = db.quotes.find(x => x.cui === q.cui);
+    if(dbQuote) {
+      dbQuote.montoFacturado = (Number(dbQuote.montoFacturado) || 0) + montoFactura;
+      await localforage.setItem('cotizaciones_db', db);
+      alert(`Cotización ${q.cui} vinculada con éxito.\nEl repositorio ha actualizado el saldo pendiente.`);
+    }
+  } catch(e) {
+    console.error(e);
+    alert("Error al intentar actualizar el saldo de la cotización en la base de datos.");
+  }
+  
+  document.getElementById("cotizacionModal").style.display = "none";
+}
+
 window.onload=init;
 </script>
 
