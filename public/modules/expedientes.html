@@ -531,7 +531,16 @@ aside .upload-box, aside .notice, aside .custom-row span {
             <div class="progress-box"><div class="bar"><div id="progressBar"></div></div><div class="pct" id="progressPct">0%</div></div>
             <div id="alerts"></div>
             <div class="form-grid">
-              <div><label>N.° factura</label><input id="expediente" placeholder="Ej.: COMP-2026-001" oninput="saveCurrent()"></div>
+              <div id="expedienteBlock"><label>N.° factura</label><input id="expediente" placeholder="Ej.: COMP-2026-001" oninput="saveCurrent()"></div>
+              <div id="ventasHeaderStep0" style="display:none; grid-column: span 2; background: #fffbeb; padding: 15px; border-radius: 6px; border: 1px solid #fcd34d;">
+                <label style="font-weight:bold; color:#b45309; display:block; margin-bottom:5px;">Cotización Vinculada (Autocompleta datos)</label>
+                <select id="cotizacionHeaderSelect" style="width:100%; border:1px solid #cbd5e1; border-radius:4px; padding:6px; margin-bottom: 15px;" onchange="confirmCotizacion(0, this)"></select>
+                
+                <label style="font-weight:bold; color:#b45309; display:block; margin-bottom:5px;">Factura de Venta (Archivos)</label>
+                <input type="file" multiple onchange="addFiles(0, this.files); this.value='';" aria-label="Cargar archivo de sustento">
+                <div class="file-list" id="files-0" style="margin-top:10px;"></div>
+              </div>
+
               <div><label>Responsable interno</label><input id="responsable" placeholder="Nombre / cargo" oninput="saveCurrent()"></div>
               <div><label>Proveedor / cliente / prestador</label><input id="tercero" placeholder="Razón social / nombre" oninput="saveCurrent()"></div>
               <div><label>RUC / DNI</label><input id="docTercero" placeholder="RUC / DNI" oninput="saveCurrent()"></div>
@@ -541,8 +550,8 @@ aside .upload-box, aside .notice, aside .custom-row span {
             </div>
             <div class="actions">
               <button type="button" class="green" id="zipBtn" onclick="downloadProcessZip()" disabled>Descargar ZIP del proceso</button>
-              <button type="button" class="alt" onclick="downloadIndex()">Descargar índice JSON</button>
-              <button type="button" class="alt" onclick="window.print()">Imprimir resumen</button>
+              <button type="button" class="alt" onclick="downloadIndex()" style="display:none;">Descargar índice JSON</button>
+              <button type="button" class="alt" onclick="window.print()" style="display:none;">Imprimir resumen</button>
               <button type="button" class="danger" onclick="clearCurrent()">Limpiar proceso</button>
             </div>
           </div>
@@ -700,6 +709,26 @@ function stepStatus(k,i){
 }
 
 function render(){
+  // Ventas Option B Logic
+  const expBlock = document.getElementById('expedienteBlock');
+  const ventasHdr = document.getElementById('ventasHeaderStep0');
+  if(currentProcess === 'ventas') {
+    if(expBlock) expBlock.style.display = 'none';
+    if(ventasHdr) {
+      ventasHdr.style.display = 'block';
+      let opts = '<option value="">-- Seleccionar Cotización --</option>';
+      const st0 = state.processes.ventas.steps[0] || {};
+      (window.cotizaciones_db || []).filter(c => !c.deletedAt).forEach(c => {
+         const label = c.cui + ' - ' + (c.proyecto ? c.proyecto.substring(0,30) : '') + ' - S/ ' + money(c.total);
+         opts += `<option value="${c.cui}" ${st0.obs === c.cui ? 'selected' : ''}>${label}</option>`;
+      });
+      document.getElementById('cotizacionHeaderSelect').innerHTML = opts;
+    }
+  } else {
+    if(expBlock) expBlock.style.display = 'block';
+    if(ventasHdr) ventasHdr.style.display = 'none';
+  }
+
   fillGeneral();
   renderSide();
   renderProcessTabs();
@@ -725,6 +754,9 @@ function renderSide(){
     btn.onclick = () => setProcess(k);
     box.appendChild(btn);
   });
+  if(currentProcess === 'ventas') {
+    renderFiles(0);
+  }
 }
 function renderProcessTabs(){
   const box = document.getElementById("processTabs");
@@ -737,6 +769,9 @@ function renderProcessTabs(){
     div.innerHTML=`<div class="tab-title">${p.icon} ${esc(p.label)}</div><div class="tab-desc">${p.steps.length} pasos activos · ${pct}% completo</div>`;
     box.appendChild(div);
   });
+  if(currentProcess === 'ventas') {
+    renderFiles(0);
+  }
 }
 function renderMetrics(){
   const g=globalPct();
@@ -757,6 +792,9 @@ function renderSummary(){
     tr.innerHTML=`<td>${p.icon} ${esc(p.label)}</td><td>${pr.active}</td><td>${pr.required}</td><td>${pr.done}</td><td><b>${pr.pct}%</b></td><td><button type="button" class="alt" onclick="setProcess('${k}')">Abrir</button></td>`;
     body.appendChild(tr);
   });
+  if(currentProcess === 'ventas') {
+    renderFiles(0);
+  }
 }
 function renderFlow(){
   const p=CONFIG.processes[currentProcess];
@@ -809,41 +847,22 @@ function renderWorkSteps(){
           <label style="margin-top:7px;"><input type="checkbox" ${st.na?"checked":""} onchange="setNA(${i}, this.checked)" style="width:auto;"> No aplica</label>
         </div>
         <div>
-          ${(currentProcess === 'ventas' && i === 0) ? 
-            (() => {
-              let opts = '<option value="">-- Seleccionar Cotización --</option>';
-              (window.cotizaciones_db || []).filter(c => !c.deletedAt).forEach(c => {
-                 const label = c.cui + ' - ' + (c.proyecto ? c.proyecto.substring(0,30) : '') + ' - S/ ' + money(c.total);
-                 opts += `<option value="${c.cui}" ${st.obs === c.cui ? 'selected' : ''}>${label}</option>`;
-              });
-              return `
-                <label>Cotización Vinculada</label>
-                <select style="width:100%; border:1px solid #cbd5e1; border-radius:4px; padding:4px; margin-bottom: 8px;" onchange="confirmCotizacion(${i}, this)">
-                  ${opts}
-                </select>
-                
-                <label style="display:block; margin-top:8px;">Factura de Venta (Archivos)</label>
-                <input type="file" multiple onchange="addFiles(${i}, this.files); this.value='';" aria-label="Cargar archivo de sustento">
-                <div class="mini">Sube el PDF / XML de la factura.</div>
-              `;
-            })() 
-          : `
           <label>Archivos</label>
           <input type="file" multiple onchange="addFiles(${i}, this.files); this.value='';" aria-label="Cargar archivo de sustento">
           <div class="mini">PDF, imagen, Excel, Word, XML, CDR, etc.</div>
-          `}
         </div>
       </div>
       <div class="step-bottom">
-        ${(currentProcess === 'ventas' && i === 0) ? '' : 
-        `<div><label>Observación / referencia</label><textarea oninput="setObs(${i}, this.value)" placeholder="Ej.: factura, OC, voucher, correo, observación.">${esc(st.obs||"")}</textarea></div>`
-        }
+        <div><label>Observación / referencia</label><textarea oninput="setObs(${i}, this.value)" placeholder="Ej.: factura, OC, voucher, correo, observación.">${esc(st.obs||"")}</textarea></div>
         <div><label>Estado</label><div style="padding-top:7px;">${stepStatus(currentProcess,i)}</div></div>
       </div>
       <div class="file-list" id="files-${i}"></div>`;
     box.appendChild(div);
     renderFiles(i);
   });
+  if(currentProcess === 'ventas') {
+    renderFiles(0);
+  }
 }
 window.confirmCotizacion = function(i, selectEl) {
   const val = selectEl.value;
@@ -884,6 +903,9 @@ function addFiles(i, files){
     };
     reader.readAsDataURL(file);
   });
+  if(currentProcess === 'ventas') {
+    renderFiles(0);
+  }
 }
 function renderFiles(i){
   const holder=document.getElementById("files-"+i); if(!holder) return;
@@ -895,6 +917,9 @@ function renderFiles(i){
     row.innerHTML=`<span title="${esc(f.name)}">📎 ${esc(f.name)} <small>(${fmtSize(f.size)})</small></span><button type="button" class="danger" onclick="removeFile(${i},${idx})">Quitar</button>`;
     holder.appendChild(row);
   });
+  if(currentProcess === 'ventas') {
+    renderFiles(0);
+  }
 }
 function removeFile(i,idx){ state.processes[currentProcess].steps[i].files.splice(idx,1); save(); render(); }
 function renderDocs(){
@@ -916,6 +941,9 @@ function renderDocs(){
       }
     });
   });
+  if(currentProcess === 'ventas') {
+    renderFiles(0);
+  }
 }
 function renderRules(){
   const body=document.getElementById("ruleRows"); if(body){ body.innerHTML=""; Object.keys(CONFIG.processes).forEach(k=>{ const p=CONFIG.processes[k]; (p.rules||[]).forEach(r=>{ const tr=document.createElement("tr"); tr.innerHTML=`<td>${esc(p.label)}</td><td>${esc(r.rule)}</td><td>${esc(r.condition)}</td><td>${esc(r.action)}</td><td>${esc(r.note||"")}</td>`; body.appendChild(tr); }); }); }
@@ -1014,6 +1042,9 @@ function makeZip(entries){
   const centralSize=central.reduce((s,p)=>s+p.length,0), centralOffset=offset;
   const end=new Uint8Array([...u32(0x06054b50),...u16(0),...u16(0),...u16(entries.length),...u16(entries.length),...u32(centralSize),...u32(centralOffset),...u16(0)]);
   return new Blob([...local,...central,end],{type:"application/zip"});
+  if(currentProcess === 'ventas') {
+    renderFiles(0);
+  }
 }
 function iconFor(i){ return ["🔎","📋","📄","📦","🧾","🧮","📅","🏦","📁","✅","⚙️","💬"][i] || "•"; }
 
@@ -1040,6 +1071,9 @@ function init(){
 // --- COTIZACIONES INTEGRATION ---
 if (typeof localforage !== 'undefined') {
   localforage.config({ name: 'J3K_Cotizaciones' });
+  if(currentProcess === 'ventas') {
+    renderFiles(0);
+  }
 }
 
 let currentQuotes = [];
