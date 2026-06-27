@@ -59,6 +59,14 @@
       "descripcion": "Control mensual de rutas, km, combustible, peajes y firmas.",
       "filename": "Bitacora Vehicular_J3K_Mensual._EJECUTIVO_J3K.html",
       "url": "/modules/bitacora.html"
+    },
+    {
+      "id": "centro_contable",
+      "categoria": "CONTABILIDAD",
+      "titulo": "Centro Contable J3K",
+      "descripcion": "Generacin de archivos paramtricos para SUNAT (SIRE y PLAME).",
+      "filename": "contabilidad.html",
+      "url": "/modules/contabilidad.html"
     }
   ]
 }
