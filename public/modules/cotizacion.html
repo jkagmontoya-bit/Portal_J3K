@@ -939,13 +939,13 @@ function renderDashboard() {
       const printBtn = cot.isExternal ? '' : `<button class="alt" style="background:#0f172a; color:white; border-color:#0f172a;" onclick="imprimirDesdeDashboard('${cot.id}')">🖨️ Imprimir</button>`;
       const tooltip = cot.isExternal ? 'Descargar PDF subido' : 'Descargar Sustento (TDR/Correo)';
       const sustentoBtnHtml = cot.sustento ? `<button class="alt" onclick="descargarSustento('${cot.id}')" title="${tooltip}">📎 ${cot.isExternal ? 'PDF' : 'Sustento'}</button>` : '';
-      let facturasAsociadas = facturasVentas.filter(f => f.general?.proyecto === cot.cui || f.cui === cot.cui);
+      let facturasAsociadas = facturasVentas.filter(f => (f.general?.proyecto || '').includes(cot.cui) || f.cui === cot.cui);
       let facturasHtml = '';
       if (facturasAsociadas.length > 0) {
         let totalFacturas = 0;
         facturasHtml += `<ul style="margin:0; padding-left:15px; font-size:11px; text-align:left;">`;
         facturasAsociadas.forEach(f => {
-           let doc = f.general?.docTercero || f.cui || 'Factura';
+           let doc = f.general?.expediente || f.general?.docTercero || f.cui || 'Factura';
            let monto = parseFloat(f.general?.monto) || 0;
            totalFacturas += monto;
            facturasHtml += `<li><b>${doc}</b>: S/ ${formatMoney(monto)}</li>`;
