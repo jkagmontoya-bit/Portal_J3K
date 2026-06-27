@@ -3,7 +3,18 @@ const { GoogleGenAI } = require('@google/genai');
 
 class GeminiService {
   constructor() {
-    this.ai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
+    // Inicialización perezosa para evitar error si la clave no está disponible al arrancar el contenedor
+    this._ai = null;
+  }
+
+  get ai() {
+    if (!this._ai) {
+      if (!env.GEMINI_API_KEY) {
+        throw new Error("GEMINI_API_KEY no configurada");
+      }
+      this._ai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
+    }
+    return this._ai;
   }
 
   async extraerDatosFactura(fileUrlOrBase64, tipo) {
@@ -12,7 +23,7 @@ class GeminiService {
     }
 
     // Aquí iría la lógica para enviar el prompt a Gemini
-    // y pedir el resultado en JSON estricto.
+    // y pedir el resultado en JSON estricto usando this.ai
     
     // Mock de extracción temporal
     return {

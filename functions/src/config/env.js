@@ -1,10 +1,14 @@
-const functions = require('firebase-functions');
+const { defineString, defineSecret } = require('firebase-functions/params');
 
-// Maneja las variables de entorno de Firebase Functions
-// Uso: firebase functions:config:set gemini.key="XXX"
-const config = functions.config();
+// En v2, definimos los parámetros que se leerán desde el entorno.
+// Si no están configurados, solicitarán su configuración al desplegar.
+const geminiApiKey = defineString('GEMINI_API_KEY');
+const sunatApiKey = defineString('SUNAT_API_KEY');
+const masterPin = defineString('MASTER_PIN', { default: 'J3K2026' });
 
 module.exports = {
-  GEMINI_API_KEY: config.gemini ? config.gemini.key : process.env.GEMINI_API_KEY,
-  SUNAT_API_KEY: config.sunat ? config.sunat.key : process.env.SUNAT_API_KEY,
+  // Los valores se obtienen invocando .value() durante la ejecución de la función
+  get GEMINI_API_KEY() { return geminiApiKey.value(); },
+  get SUNAT_API_KEY() { return sunatApiKey.value(); },
+  get MASTER_PIN() { return masterPin.value(); }
 };

@@ -1,0 +1,274 @@
+
+--- C:\Portal_J3K_GitHubReady\functions\src\config\env.js ---
+
+const functions = require('firebase-functions');
+
+// Maneja las variables de entorno de Firebase Functions
+// Uso: firebase functions:config:set gemini.key="XXX"
+const config = functions.config();
+
+module.exports = {
+  GEMINI_API_KEY: config.gemini ? config.gemini.key : process.env.GEMINI_API_KEY,
+  SUNAT_API_KEY: config.sunat ? config.sunat.key : process.env.SUNAT_API_KEY,
+};
+
+--- C:\Portal_J3K_GitHubReady\functions\src\config\firebase.js ---
+
+const admin = require('firebase-admin');
+
+// Inicializar la aplicación de Firebase Admin
+admin.initializeApp();
+
+const db = admin.database();
+
+module.exports = {
+  admin,
+  db
+};
+
+--- C:\Portal_J3K_GitHubReady\functions\src\controllers\auth.controller.js ---
+
+const express = require('express');
+const router = express.Router();
+const authMiddleware = require('../middlewares/auth.middleware');
+
+// El PIN Maestro estará guardado en las variables de entorno de forma segura.
+// Por ahora, se define por defecto o desde el env.
+const MASTER_PIN = process.env.MASTER_PIN || 'J3K2026';
+
+router.post('/verify-pin', authMiddleware, async (req, res, next) => {
+  try {
+    const { pin } = req.body;
+    
+    if (!pin) {
+      return res.status(400).json({ success: false, message: 'PIN requerido' });
+    }
+
+    if (pin === MASTER_PIN) {
+      return res.json({ success: true, message: 'PIN validado correctamente' });
+    } else {
+      // 403 Forbidden para denegar el acceso
+      return res.status(403).json({ success: false, message: 'PIN incorrecto' });
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+module.exports = router;
+
+--- C:\Portal_J3K_GitHubReady\functions\src\controllers\contabilidad.controller.js ---
+
+const sireService = require('../services/sire.service');
+const plameService = require('../services/plame.service');
+
+exports.generarSire = async (req, res, next) => {
+  try {
+    const { mes, anio, tipo } = req.body;
+    let resultado;
+    
+    if (tipo === 'ventas') {
+      resultado = await sireService.generarRVIE(mes, anio);
+    } else {
+      resultado = await sireService.generarRCE(mes, anio);
+    }
+    
+    res.json({ success: true, fileData: resultado });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.generarPlame = async (req, res, next) => {
+  try {
+    const { mes, anio } = req.body;
+    const resultado = await plameService.generarPlameHonorarios(mes, anio);
+    res.json({ success: true, fileData: resultado });
+  } catch (error) {
+    next(error);
+  }
+};
+
+--- C:\Portal_J3K_GitHubReady\functions\src\controllers\ia.controller.js ---
+
+const geminiService = require('../services/gemini.service');
+
+exports.extraerFactura = async (req, res, next) => {
+  try {
+    const { fileUrl, tipo_documento } = req.body;
+    const extraccion = await geminiService.extraerDatosFactura(fileUrl, tipo_documento);
+    res.json({ success: true, extraccion });
+  } catch (error) {
+    next(error);
+  }
+};
+
+--- C:\Portal_J3K_GitHubReady\functions\src\controllers\sunat.controller.js ---
+
+const sunatService = require('../services/sunat.service');
+
+exports.consultaDocumento = async (req, res, next) => {
+  try {
+    const { tipo, numero } = req.query;
+    const data = await sunatService.consultarDocumento(tipo, numero);
+    res.json({ success: true, data });
+  } catch (error) {
+    next(error); // Pasa al errorHandler
+  }
+};
+
+--- C:\Portal_J3K_GitHubReady\functions\src\middlewares\auth.middleware.js ---
+
+const { admin } = require('../config/firebase');
+
+const verifyToken = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ success: false, error: 'No autorizado. Token faltante.' });
+  }
+
+  const token = authHeader.split('Bearer ')[1];
+
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    req.user = decodedToken;
+    next();
+  } catch (error) {
+    console.error('Error verificando token:', error);
+    return res.status(401).json({ success: false, error: 'Token inválido o expirado.' });
+  }
+};
+
+module.exports = verifyToken;
+
+--- C:\Portal_J3K_GitHubReady\functions\src\middlewares\errorHandler.js ---
+
+module.exports = (err, req, res, next) => {
+  console.error('[Error Centralizado]:', err);
+  const status = err.status || 500;
+  const message = err.message || 'Error interno del servidor';
+  
+  res.status(status).json({
+    success: false,
+    error: message,
+    code: status
+  });
+};
+
+--- C:\Portal_J3K_GitHubReady\functions\src\services\gemini.service.js ---
+
+const env = require('../config/env');
+const { GoogleGenAI } = require('@google/genai');
+
+class GeminiService {
+  constructor() {
+    this.ai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
+  }
+
+  async extraerDatosFactura(fileUrlOrBase64, tipo) {
+    if (!env.GEMINI_API_KEY) {
+      throw new Error("GEMINI_API_KEY no configurada");
+    }
+
+    // Aquí iría la lógica para enviar el prompt a Gemini
+    // y pedir el resultado en JSON estricto.
+    
+    // Mock de extracción temporal
+    return {
+      ruc_emisor: "20612829561",
+      fecha_emision: new Date().toISOString().split('T')[0],
+      subtotal: 1000.00,
+      igv: 180.00,
+      total: 1180.00,
+      descripcion: "Servicio de auditoría"
+    };
+  }
+}
+
+module.exports = new GeminiService();
+
+--- C:\Portal_J3K_GitHubReady\functions\src\services\plame.service.js ---
+
+const { db } = require('../config/firebase');
+
+class PlameService {
+  async generarPlameHonorarios(mes, anio) {
+    // Reglas de negocio de RH: Retención 8% si > S/ 1500 sin suspensión
+    return "FORMATO|TXT|PLAME|RH|MOCK";
+  }
+}
+
+module.exports = new PlameService();
+
+--- C:\Portal_J3K_GitHubReady\functions\src\services\sire.service.js ---
+
+const { db } = require('../config/firebase');
+
+class SireService {
+  async generarRCE(mes, anio) {
+    // Buscar en Firebase los expedientes de compras completados
+    // Formatear en TXT SIRE
+    return "FORMATO|TXT|SIRE|COMPRAS|MOCK";
+  }
+
+  async generarRVIE(mes, anio) {
+    // Buscar en Firebase los expedientes de ventas completados
+    // Formatear en TXT SIRE
+    return "FORMATO|TXT|SIRE|VENTAS|MOCK";
+  }
+}
+
+module.exports = new SireService();
+
+--- C:\Portal_J3K_GitHubReady\functions\src\services\sunat.service.js ---
+
+const env = require('../config/env');
+const axios = require('axios');
+
+class SunatService {
+  async consultarDocumento(tipo, numero) {
+    // Ejemplo de integración genérica, reemplazar con proveedor real.
+    // Ej: API Peru, Apis.net.pe
+    if (!numero) throw new Error("Número de documento requerido");
+    
+    // Mocking response for architecture demonstration
+    return {
+      razonSocial: "EMPRESA MOCK J3K S.A.C.",
+      condicion: "HABIDO",
+      estado: "ACTIVO",
+      direccion: "AV LIMA 123",
+      ubigeo: "150101"
+    };
+  }
+}
+
+module.exports = new SunatService();
+
+--- C:\Portal_J3K_GitHubReady\functions\src\triggers\auditoria.trigger.js ---
+
+const functions = require('firebase-functions');
+const { db } = require('../config/firebase');
+
+exports.onExpedienteWrite = functions.database.ref('/expedientes/{id}')
+  .onWrite(async (change, context) => {
+    const beforeData = change.before.val();
+    const afterData = change.after.val();
+
+    if (!afterData) {
+      console.log(`Expediente ${context.params.id} eliminado. Auditoría guardada.`);
+      return null;
+    }
+
+    console.log(`Verificando cambios en Expediente ${context.params.id}`);
+    
+    // Regla de Negocio: Si un expediente estaba al 100% y se modificó,
+    // o si el estado cambia a 'Finalizado', requerir validación.
+    // Esta lógica prevendrá modificaciones no autorizadas.
+    // En construcción (Mock):
+    
+    // Si detectamos un cambio ilegal, podríamos hacer:
+    // await change.after.ref.set(beforeData);
+    // console.log("Cambio revertido por falta de Master PIN");
+    
+    return null;
+  });

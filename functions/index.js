@@ -1,4 +1,4 @@
-const functions = require('firebase-functions');
+const { onRequest } = require('firebase-functions/v2/https');
 const express = require('express');
 const cors = require('cors');
 
@@ -39,8 +39,8 @@ app.use('/api/v1/auth', authController);
 // Error Handler Centralizado (Debe ir al final)
 app.use(errorHandler);
 
-// Exportar Express app
-exports.api = functions.https.onRequest(app);
+// Exportar Express app (v2)
+exports.api = onRequest({ cors: true }, app);
 
 // Exportar Triggers
 exports.auditoriaExpedientes = auditoriaTrigger.onExpedienteWrite;
