@@ -473,7 +473,7 @@ function addFiles(i, files){
     reader.onload=e=>{
       state.processes[currentProcess].steps[i].files.push({name:file.name,type:file.type||"application/octet-stream",size:file.size,data:e.target.result,addedAt:new Date().toISOString()});
       
-      if(CONFIG.processes[currentProcess].steps[i].name === "Entrega y conformidad" || CONFIG.processes[currentProcess].steps[i].name === "PAGO y/o DETRACCION") {
+      if(CONFIG.processes[currentProcess].steps[i].name === "Entrega y conformidad" || CONFIG.processes[currentProcess].steps[i].name === "PAGO y/o DETRACCION" || (currentProcess === 'ventas' && i === 0)) {
         state.processes[currentProcess].steps[i].ok = true;
       }
       
