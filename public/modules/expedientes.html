@@ -417,8 +417,7 @@ aside .upload-box, aside .notice, aside .custom-row span {
     <details class="side-group" open>
       <summary>Panel</summary>
       <div class="side-group-content">
-        <button type="button" class="nav-btn active" data-view="resumen" onclick="showView('resumen')"><span class="nav-icon">📊</span>Resumen</button>
-        <button type="button" class="nav-btn" data-view="proceso" onclick="showView('proceso')"><span class="nav-icon">📁</span>Expediente</button>
+        <button type="button" class="nav-btn active" data-view="proceso" onclick="showView('proceso')"><span class="nav-icon">📁</span>Expediente</button>
         <button type="button" class="nav-btn" data-view="documentos" onclick="showView('documentos')" style="display:none;"><span class="nav-icon">🧾</span>Documentos</button>
         <button type="button" class="nav-btn" data-view="reglas" onclick="showView('reglas')" style="display:none;"><span class="nav-icon">⚠️</span>Reglas</button>
       </div>
@@ -453,7 +452,7 @@ aside .upload-box, aside .notice, aside .custom-row span {
       </div>
     </div>
 
-    <div class="view active" id="view-resumen">
+    <div class="view" id="view-resumen">
       <div class="metrics" id="metrics"></div>
       <div class="panel">
         <div class="panel-title">
@@ -479,7 +478,7 @@ aside .upload-box, aside .notice, aside .custom-row span {
       </div>
     </div>
 
-    <div class="view" id="view-proceso">
+    <div class="view active" id="view-proceso">
       <details class="process-accordion" open><summary>Procesos del expediente</summary><div class="process-tabs" id="processTabs"></div></details>
       <div class="layout">
         <div>
