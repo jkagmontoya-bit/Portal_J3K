@@ -20,17 +20,7 @@ if (typeof firebase.auth === 'function') {
   auth = firebase.auth();
   window.firebaseAuth = auth;
 }
-if (auth) {
-  auth.onAuthStateChanged(user => {
-    if (user && !sessionStorage.getItem('j3k_auth_loaded')) {
-      sessionStorage.setItem('j3k_auth_loaded', '1');
-      location.reload();
-    }
-    if (!user) {
-      sessionStorage.removeItem('j3k_auth_loaded');
-    }
-  });
-}
+
 window.waitForAuth = function() {
   return new Promise((resolve) => {
     if (window.firebaseAuth) {
