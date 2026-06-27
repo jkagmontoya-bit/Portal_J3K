@@ -15,7 +15,11 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 const db = firebase.database();
-
+let auth;
+if (typeof firebase.auth === 'function') {
+  auth = firebase.auth();
+  window.firebaseAuth = auth;
+}
 // Universal function to sync DB updates
 window.saveToFirebase = async function(path, data) {
   try {
