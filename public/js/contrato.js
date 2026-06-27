@@ -1,5 +1,6 @@
-const KEY = "contrato_arrendamiento_camioneta_j3k_v1";
+const DB_KEY = 'contratos_db';
 const firmas = ["firmaArr", "firmaJ3K"];
+let currentAction = null;
 
 function syncCampos() {
   const pares = [
@@ -18,6 +19,16 @@ function syncCampos() {
   });
 }
 
+function limpiarCampos() {
+  document.querySelectorAll(".page input:not([type=file]), .page textarea").forEach(el => el.value = "");
+  document.querySelectorAll(".page .sig-area img").forEach(img => {
+    img.removeAttribute("src");
+    img.style.display = "none";
+  });
+  document.querySelectorAll(".page .sig-placeholder").forEach(el => el.style.display = "block");
+  document.querySelectorAll('.page input[type="file"]').forEach(el => el.value = "");
+}
+
 function recoger() {
   syncCampos();
   const d = { campos: {}, checks: {}, firmas: {} };
@@ -27,8 +38,9 @@ function recoger() {
   });
   firmas.forEach(id => {
     const c = document.getElementById(id);
-    d.firmas[id] = c.toDataURL("image/png");
+    if(c) d.firmas[id] = c.toDataURL("image/png");
   });
+  d.timestamp = new Date().toISOString();
   return d;
 }
 
@@ -47,10 +59,7 @@ function aplicar(d) {
   }, 100);
 }
 
-
-const DB_KEY = 'contratos_db';
-let currentAction = null;
-
+// DASHBOARD
 async function renderDashboard() {
   const table = document.getElementById("dbTbody");
   if (!table) return;
@@ -63,7 +72,7 @@ async function renderDashboard() {
   
   contratos.slice().reverse().forEach(c => {
     const tr = document.createElement("tr");
-    const arr = (c.fields && c.fields[2]) ? c.fields[2] : 'SIN NOMBRE';
+    const arr = (c.campos && c.campos.arrNombre) ? c.campos.arrNombre : ((c.fields && c.fields[3]) ? c.fields[3] : 'SIN NOMBRE');
     tr.innerHTML = `
       <td style="padding:12px; border-bottom:1px solid #e2e8f0;"><b>${c.cui}</b></td>
       <td style="padding:12px; border-bottom:1px solid #e2e8f0;">${c.date || 'Reciente'}</td>
@@ -174,78 +183,10 @@ async function confirmarAuth() {
   currentAction = null;
 }
 
-function limpiarCampos() {
-  document.querySelectorAll(".page input:not([type=file]), .page textarea").forEach(el => el.value = "");
-  document.querySelectorAll(".page .sig-area img").forEach(img => {
-    img.removeAttribute("src");
-    img.style.display = "none";
-  });
-  document.querySelectorAll(".page .sig-placeholder").forEach(el => el.style.display = "block");
-  document.querySelectorAll('.page input[type="file"]').forEach(el => el.value = "");
-}
-
-function syncCampos() {
-  const pares = [
-    ["lugarFirma","lugarTexto"], ["fechaContrato","fechaTexto"],
-    ["arrNombre","arrNombreTexto"], ["arrDoc","arrDocTexto"], ["arrDomicilio","arrDomTexto"],
-    ["repNombre","repTexto"], ["repDni","repDniTexto"],
-    ["fechaInicio","clInicio"], ["fechaFin","clFin"], ["renta","clRenta"],
-    ["placa","actaPlaca"], ["kmEntrega","actaKm"], ["soat","actaSoat"], ["revtec","actaRev"],
-    ["arrNombre","firmaArrNombre"], ["arrDoc","firmaArrDoc"],
-    ["repNombre","firmaRep"], ["repDni","firmaRepDni"]
-  ];
-  pares.forEach(([a,b]) => {
-    const origen = document.querySelector(`[data-key="${a}"]`);
-    const destino = document.querySelector(`[data-key="${b}"]`);
-    if (origen && destino && !destino.value) destino.value = origen.value;
-  });
-}
-
-function recoger() {
-  syncCampos();
-  const d = { cui: currentCui, campos: {}, checks: {}, firmas: {} };
-  document.querySelectorAll("[data-key]").forEach(el => {
-    if (el.type === "checkbox") d.checks[el.dataset.key] = el.checked;
-    else d.campos[el.dataset.key] = el.value;
-  });
-  firmas.forEach(id => {
-    const c = document.getElementById(id);
-    d.firmas[id] = c.toDataURL("image/png");
-  });
-  d.timestamp = new Date().toISOString();
-  return d;
-}
-
-function aplicar(d) {
-  if (!d) return;
-  Object.entries(d.campos || {}).forEach(([k,v]) => {
-    const el = document.querySelector(`[data-key="${k}"]`);
-    if (el && el.type !== "checkbox") el.value = v;
-  });
-  Object.entries(d.checks || {}).forEach(([k,v]) => {
-    const el = document.querySelector(`[data-key="${k}"]`);
-    if (el && el.type === "checkbox") el.checked = !!v;
-  });
-  setTimeout(() => {
-    Object.entries(d.firmas || {}).forEach(([id,src]) => restaurarFirma(id, src));
-  }, 100);
-}
-
-async function guardar() {
-  const d = recoger();
-  if (currentIdx === -1) {
-    contratosArray.push(d);
-    currentIdx = contratosArray.length - 1;
-  } else {
-    contratosArray[currentIdx] = d;
-  }
-  await localforage.setItem(KEY, contratosArray);
-  if(typeof saveToFirebase === 'function') saveToFirebase(KEY, d);
-  alert("Contrato guardado correctamente.");
-}
-
+// FUNCIONES EXTRAS
 function exportar() {
   const d = recoger();
+  const currentCui = document.getElementById("cui-hidden").value || "NUEVO";
   const placa = (d.campos.placa || "sin_placa").replace(/[^a-zA-Z0-9_-]/g, "_");
   const blob = new Blob([JSON.stringify(d, null, 2)], {type:"application/json"});
   const a = document.createElement("a");
@@ -255,20 +196,9 @@ function exportar() {
   URL.revokeObjectURL(a.href);
 }
 
-function _limpiarFormulario() {
-  document.querySelectorAll("[data-key]").forEach(el => {
-    if (el.type === "checkbox") el.checked = false;
-    else if (!el.readOnly) el.value = "";
-  });
-  firmas.forEach(limpiarFirma);
-}
-
-function limpiar() {
-  if (!confirm("¿Limpiar todo el formulario actual?")) return;
-  _limpiarFormulario();
-}
-
+// FIRMA LOGIC
 function iniciarFirma(canvas) {
+  if(!canvas) return;
   const ctx = canvas.getContext("2d");
   let dib = false, x = 0, y = 0;
 
@@ -323,6 +253,7 @@ function iniciarFirma(canvas) {
 
 function limpiarFirma(id) {
   const c = document.getElementById(id);
+  if(!c) return;
   const ctx = c.getContext("2d");
   ctx.clearRect(0, 0, c.width, c.height);
 }
@@ -343,5 +274,5 @@ function restaurarFirma(id, src) {
 window.onload = () => {
   firmas.forEach(id => iniciarFirma(document.getElementById(id)));
   document.querySelectorAll("[data-key]").forEach(el => el.addEventListener("change", syncCampos));
-  loadDB();
+  renderDashboard();
 };
