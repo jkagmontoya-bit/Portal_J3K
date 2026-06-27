@@ -271,7 +271,32 @@ function renderDashboard() {
     try { if (expedientesStateRaw) expedientesState = JSON.parse(expedientesStateRaw); } catch(e){}
     const facturasVentas = expedientesState?.saved?.ventas || [];
 
+    let lastMonthYear = "";
+
     DB.slice().reverse().filter(c => !c.deletedAt).forEach(cot => {
+      let monthYearStr = "Sin Fecha";
+      if (cot.fecha) {
+         try {
+             const parts = cot.fecha.split('-');
+             if (parts.length === 3) {
+                 const mapMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+                 const mIndex = parseInt(parts[1], 10) - 1;
+                 monthYearStr = `${mapMeses[mIndex]} ${parts[0]}`;
+             } else {
+                 monthYearStr = cot.fecha;
+             }
+         } catch(e) {
+             monthYearStr = cot.fecha;
+         }
+      }
+
+      if (monthYearStr !== lastMonthYear) {
+          const separatorTr = document.createElement('tr');
+          separatorTr.innerHTML = `<td colspan="7" style="background-color: #f1f5f9; color: #334155; font-weight: bold; text-transform: uppercase; padding: 10px; font-size: 13px; text-align: left;"><i class="fas fa-calendar-alt" style="margin-right: 8px; color: #64748b;"></i> ${monthYearStr}</td>`;
+          tbody.appendChild(separatorTr);
+          lastMonthYear = monthYearStr;
+      }
+
       const tr = document.createElement('tr');
       let facturasAsociadas = facturasVentas.filter(f => (f.general?.proyecto || '').includes(cot.cui) || f.cui === cot.cui);
       let facturasHtml = '';
