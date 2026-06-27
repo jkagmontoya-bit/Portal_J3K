@@ -1064,11 +1064,12 @@ async function openCotizacionModal() {
   }
   try {
     const db = await localforage.getItem('cotizaciones_db');
-    if(!db || !db.quotes || db.quotes.length === 0) {
+    const dbArray = Array.isArray(db) ? db : (db && db.quotes ? db.quotes : []);
+    if(dbArray.length === 0) {
       alert("No hay cotizaciones registradas en el repositorio.");
       return;
     }
-    const aprobadas = db.quotes.filter(q => q.estado === "APROBADA");
+    const aprobadas = dbArray.filter(q => q.estado === "APROBADA");
     if(aprobadas.length === 0) {
       alert("No se encontraron cotizaciones con estado APROBADA.");
       return;
