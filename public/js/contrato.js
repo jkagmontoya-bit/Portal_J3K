@@ -181,30 +181,7 @@ function limpiarCampos() {
     img.style.display = "none";
   });
   document.querySelectorAll(".page .sig-placeholder").forEach(el => el.style.display = "block");
-  if (authAction === 'editar') {
-    editarContrato(authTarget);
-  } else if (authAction === 'eliminar') {
-    eliminarContrato(authTarget);
-  }
-}
-
-function editarContrato(cui) {
-  const idx = contratosArray.findIndex(c => c.cui === cui);
-  if(idx === -1) return;
-  currentCui = cui;
-  currentIdx = idx;
-  _limpiarFormulario();
-  aplicar(contratosArray[idx]);
-  document.getElementById("display-cui").innerText = currentCui;
-  document.getElementById("cui").value = currentCui;
-  showEditor();
-}
-
-async function eliminarContrato(cui) {
-  if(!confirm("¿Está seguro de eliminar definitivamente este contrato?")) return;
-  contratosArray = contratosArray.filter(c => c.cui !== cui);
-  await localforage.setItem(KEY, contratosArray);
-  renderDashboard();
+  document.querySelectorAll('.page input[type="file"]').forEach(el => el.value = "");
 }
 
 function syncCampos() {
