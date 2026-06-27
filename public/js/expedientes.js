@@ -243,12 +243,12 @@ function render(){
   
   const cotizacionVinculada = !!state.processes[currentProcess].general.docTercero;
 
-  if(currentProcess === 'ventas') {
-    if(expBlock) expBlock.style.display = 'none';
-    if(btnLink) btnLink.style.display = 'inline-block';
-    if(ventasHdr) ventasHdr.style.display = cotizacionVinculada ? 'block' : 'none';
-    if(ventasExtra) ventasExtra.style.display = cotizacionVinculada ? 'flex' : 'none';
-  } else {
+    if(currentProcess === 'ventas') {
+      if(expBlock) expBlock.style.display = 'none';
+      if(btnLink) btnLink.style.display = 'inline-block';
+      if(ventasHdr) ventasHdr.style.display = 'block';
+      if(ventasExtra) ventasExtra.style.display = 'flex';
+    } else {
     if(expBlock) expBlock.style.display = 'block';
     if(ventasHdr) ventasHdr.style.display = 'none';
     if(ventasExtra) ventasExtra.style.display = 'none';
