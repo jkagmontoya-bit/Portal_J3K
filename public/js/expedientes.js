@@ -89,7 +89,7 @@ function fillGeneral(){
 
   const btnLink = document.getElementById("btnLinkCotizacion");
   if(btnLink) {
-    btnLink.style.display = (currentProcess === 'ventas') ? 'inline-block' : 'none';
+    btnLink.style.display = (currentProcess === 'ventas' || currentProcess === 'compras') ? 'inline-block' : 'none';
   }
 }
 
@@ -206,7 +206,7 @@ function render(){
          const opt = document.createElement('option');
          opt.value = item.id;
          let name = "";
-         if(currentProcess === 'ventas') {
+         if(currentProcess === 'ventas' || currentProcess === 'compras') {
              let cui = item.general.cotizacionCUI || 'S/C';
              let tercero = item.general.tercero || 'Sin Cliente';
              let monto = item.general.monto ? `S/ ${money(item.general.monto)}` : 'S/ 0.00';
@@ -243,7 +243,7 @@ function render(){
   
   const cotizacionVinculada = !!state.processes[currentProcess].general.docTercero;
 
-    if(currentProcess === 'ventas') {
+    if(currentProcess === 'ventas' || currentProcess === 'compras') {
       if(expBlock) expBlock.style.display = 'none';
       if(btnLink) btnLink.style.display = 'inline-block';
       if(ventasHdr) ventasHdr.style.display = 'block';
@@ -325,7 +325,7 @@ function renderFlow(){
   document.getElementById("keyDocs").innerHTML = `<b>Documentos clave:</b><br>${esc(p.keyDocs||"Según pasos definidos en la matriz.")}`;
   const flow=document.getElementById("flowSteps"); flow.innerHTML="";
   p.steps.forEach((s,i)=>{
-    if(currentProcess === 'ventas' && i === 0) return;
+    if((currentProcess === 'ventas' || currentProcess === 'compras') && i === 0) return;
     const done=isStepComplete(currentProcess,i);
     const div=document.createElement("div");
     div.className="flow-step "+(done?"done":"");
@@ -353,7 +353,7 @@ function renderWorkSteps(){
   }
   const p=CONFIG.processes[currentProcess];
   p.steps.forEach((s,i)=>{
-    if(currentProcess === 'ventas' && i === 0) return;
+    if((currentProcess === 'ventas' || currentProcess === 'compras') && i === 0) return;
     const st=state.processes[currentProcess].steps[i];
     const div=document.createElement("div");
     div.className="work-step "+(isStepComplete(currentProcess,i)?"done":(s.required?"warn":"optional"));
@@ -375,11 +375,11 @@ function renderWorkSteps(){
         </div>
         <div>
           <label>Archivos</label>
-          <input type="file" ${currentProcess === 'ventas' && (i === 0 || (i === 3 && !state.processes[currentProcess].general.tieneDetraccionVenta)) ? '' : 'multiple'} onchange="addFiles(${i}, this.files); this.value='';" aria-label="Cargar archivo de sustento">
+          <input type="file" ${(['ventas', 'compras'].includes(currentProcess)) && (i === 0 || ((currentProcess === 'ventas' ? i === 3 : i === 6) && !state.processes[currentProcess].general.tieneDetraccionVenta)) ? '' : 'multiple'} onchange="addFiles(${i}, this.files); this.value='';" aria-label="Cargar archivo de sustento">
           <div class="mini">PDF, imagen, Excel, Word, XML, CDR, etc.</div>
         </div>
       </div>
-      ${(currentProcess === 'ventas' && i === 3 && state.processes[currentProcess].general.tieneDetraccionVenta) ? '<div style="background:#fef3c7; border:1px solid #f59e0b; border-radius:6px; padding:10px; margin:8px 0; color:#92400e; font-size:13px;"><b>⚠️ Recordatorio:</b> Esta operación tiene detracción. Debe subir el <b>Voucher de Pago</b> y la <b>Constancia de Detracción</b> (2 archivos).</div>' : ''}
+      ${(((currentProcess === 'ventas' && i === 3) || (currentProcess === 'compras' && i === 6)) && state.processes[currentProcess].general.tieneDetraccionVenta) ? '<div style="background:#fef3c7; border:1px solid #f59e0b; border-radius:6px; padding:10px; margin:8px 0; color:#92400e; font-size:13px;"><b>⚠️ Recordatorio:</b> Esta operación tiene detracción. Debe subir el <b>Voucher de Pago</b> y la <b>Constancia de Detracción</b> (2 archivos).</div>' : ''}
       <div class="step-bottom">
         <div style="flex:1;">
           <label>Observaciones / referencias</label>
@@ -404,9 +404,9 @@ function renderWorkSteps(){
     box.appendChild(div);
     renderFiles(i);
   });
-  if (currentProcess === 'ventas') {
-    renderFiles(0);
-  }
+  if (currentProcess === 'ventas' || currentProcess === 'compras') {
+      renderFiles(0);
+    }
 }
 window.confirmCotizacion = function(i, selectEl) {
   const val = selectEl.value;
@@ -453,17 +453,17 @@ function removeObs(i, oIdx){
   if(Array.isArray(st.obs)) { st.obs.splice(oIdx, 1); save(); render(); }
 }
 function addFiles(i, files){
-  if(currentProcess === 'ventas') {
+  if(currentProcess === 'ventas' || currentProcess === 'compras') {
     const currentFiles = state.processes[currentProcess].steps[i].files || [];
     if(i === 0 && currentFiles.length >= 1) {
       alert('La factura de venta solo acepta 1 archivo. Elimina el actual para subir otro.');
       return;
     }
-    if(i === 3) {
-      const tieneDetraccion = state.processes[currentProcess].general.tieneDetraccionVenta;
+    if((currentProcess === 'ventas' && i === 3) || (currentProcess === 'compras' && i === 6)) {
+        const tieneDetraccion = state.processes[currentProcess].general.tieneDetraccionVenta;
       const maxFiles = tieneDetraccion ? 2 : 1;
       if(currentFiles.length >= maxFiles) {
-        alert(tieneDetraccion ? 'La cobranza acepta máximo 2 archivos: Voucher de Pago y Detracción.' : 'La cobranza acepta máximo 1 archivo: Voucher de Pago.');
+        alert(tieneDetraccion ? 'Este paso acepta máximo 2 archivos: Voucher de Pago y Detracción.' : 'Este paso acepta máximo 1 archivo: Voucher de Pago.');
         return;
       }
     }
@@ -473,7 +473,7 @@ function addFiles(i, files){
     reader.onload=e=>{
       state.processes[currentProcess].steps[i].files.push({name:file.name,type:file.type||"application/octet-stream",size:file.size,data:e.target.result,addedAt:new Date().toISOString()});
       
-      if(CONFIG.processes[currentProcess].steps[i].name === "Entrega y conformidad" || CONFIG.processes[currentProcess].steps[i].name === "PAGO y/o DETRACCION" || (currentProcess === 'ventas' && i === 0)) {
+      if(CONFIG.processes[currentProcess].steps[i].name === "Entrega y conformidad" || CONFIG.processes[currentProcess].steps[i].name === "PAGO y/o DETRACCION" || (['ventas', 'compras'].includes(currentProcess) && i === 0)) {
         state.processes[currentProcess].steps[i].ok = true;
       }
       
@@ -613,7 +613,7 @@ function renderDocs(){
   Object.keys(CONFIG.processes).forEach(k=>{
     const p=CONFIG.processes[k];
     p.steps.forEach((s,i)=>{
-    if(currentProcess === 'ventas' && i === 0) return;
+    if((currentProcess === 'ventas' || currentProcess === 'compras') && i === 0) return;
       const st=state.processes[k].steps[i], files=st.files||[];
       if(files.length===0){
         const tr=document.createElement("tr");
