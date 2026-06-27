@@ -146,7 +146,8 @@ function showEditor() {
 }
 
 async function nuevoContrato() {
-  document.getElementById("editorTitle").innerText = "Nuevo Contrato";
+  const titleEl = document.getElementById("editorTitle");
+  if(titleEl) titleEl.innerText = "Nuevo Contrato";
   limpiarCampos();
   
   const contratos = await localforage.getItem(DB_KEY) || [];
@@ -155,14 +156,17 @@ async function nuevoContrato() {
   if (nums.length > 0) nextId = Math.max(...nums) + 1;
   
   const newCui = "CUI-CONT-" + String(nextId).padStart(3, '0');
-  document.getElementById("cui-display").innerText = newCui;
-  document.getElementById("cui-hidden").value = newCui;
+  const dispEl = document.getElementById("display-cui") || document.getElementById("cui-display");
+  if(dispEl) dispEl.innerText = newCui;
+  const hidEl = document.getElementById("cui") || document.getElementById("cui-hidden");
+  if(hidEl) hidEl.value = newCui;
   
   showEditor();
 }
 
 async function guardarContrato() {
-  const cui = document.getElementById("cui-hidden").value;
+  const hidEl = document.getElementById("cui") || document.getElementById("cui-hidden");
+  const cui = hidEl ? hidEl.value : null;
   if (!cui) return;
   const data = recoger();
   data.cui = cui;
@@ -213,9 +217,12 @@ async function confirmarAuth() {
     const contratos = await localforage.getItem(DB_KEY) || [];
     const con = contratos.find(a => a.cui === currentAction.cui);
     if(con) {
-      document.getElementById("cui-display").innerText = currentAction.cui;
-      document.getElementById("cui-hidden").value = currentAction.cui;
-      document.getElementById("editorTitle").innerText = "Editar Contrato";
+      const dispEl = document.getElementById("display-cui") || document.getElementById("cui-display");
+      if(dispEl) dispEl.innerText = currentAction.cui;
+      const hidEl = document.getElementById("cui") || document.getElementById("cui-hidden");
+      if(hidEl) hidEl.value = currentAction.cui;
+      const titleEl = document.getElementById("editorTitle");
+      if(titleEl) titleEl.innerText = "Editar Contrato";
       limpiarCampos();
       aplicar(con);
       showEditor();
@@ -234,7 +241,8 @@ async function confirmarAuth() {
 // FUNCIONES EXTRAS
 function exportar() {
   const d = recoger();
-  const currentCui = document.getElementById("cui-hidden").value || "NUEVO";
+  const hidEl = document.getElementById("cui") || document.getElementById("cui-hidden");
+  const currentCui = hidEl ? hidEl.value : "NUEVO";
   const placa = (d.campos.placa || "sin_placa").replace(/[^a-zA-Z0-9_-]/g, "_");
   const blob = new Blob([JSON.stringify(d, null, 2)], {type:"application/json"});
   const a = document.createElement("a");
