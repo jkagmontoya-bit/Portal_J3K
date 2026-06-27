@@ -622,10 +622,13 @@ function renderDashboard() {
     showDashboard();
   }
 
-  async function guardarYGenerarPDF() {
-    await guardarCotizacion();
-    abrirEdicion(currentDoc.id);
+  function guardarYGenerarPDF() {
     ejecutarImpresion();
+    guardarCotizacion().then(() => {
+      abrirEdicion(currentDoc.id);
+    }).catch(err => {
+      console.error("Error guardando:", err);
+    });
   }
 
   function ejecutarImpresion() {
@@ -679,7 +682,7 @@ function renderDashboard() {
     document.getElementById('pPagos').innerHTML = edPagos.root.innerHTML;
     document.getElementById('pBanco').innerHTML = edBanco.root.innerHTML;
 
-    const isSimple = (currentDoc.tipo === 'simple');
+    const isSimple = (currentDoc.tipoCotizacion === 'simple');
     document.getElementById('secObjetivo').style.display = isSimple ? 'none' : 'block';
     document.getElementById('secAlcances').style.display = isSimple ? 'none' : 'block';
     document.getElementById('secMetodologia').style.display = isSimple ? 'none' : 'block';
