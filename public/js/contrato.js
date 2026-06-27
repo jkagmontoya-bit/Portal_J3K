@@ -69,8 +69,56 @@ async function renderDashboard() {
     table.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px;">No hay contratos guardados.</td></tr>';
     return;
   }
+
+  const select = document.getElementById('filtroMes');
+  if (select && select.options.length <= 1 && contratos.length > 0) {
+    const months = new Set();
+    contratos.forEach(c => {
+      if(c.timestamp) {
+        const d = new Date(c.timestamp);
+        const mm = String(d.getMonth()+1).padStart(2, '0');
+        const yyyy = d.getFullYear();
+        months.add(`${mm}/${yyyy}`);
+      } else if (c.date) {
+        // Fallback for old records
+        const parts = c.date.split(',')[0].split('/');
+        if(parts.length >= 3) {
+          const mm = parts[1].padStart(2, '0');
+          const yyyy = parts[2];
+          months.add(`${mm}/${yyyy}`);
+        }
+      }
+    });
+    const sorted = Array.from(months).sort((a,b) => {
+      const [m1,y1] = a.split('/'); const [m2,y2] = b.split('/');
+      return (y2+m2).localeCompare(y1+m1);
+    });
+    sorted.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m;
+      opt.textContent = m;
+      select.appendChild(opt);
+    });
+    const now = new Date();
+    const curStr = `${String(now.getMonth()+1).padStart(2, '0')}/${now.getFullYear()}`;
+    if (months.has(curStr)) select.value = curStr;
+  }
   
-  contratos.slice().reverse().forEach(c => {
+  const filterVal = select ? select.value : 'todos';
+  const filtered = contratos.filter(c => {
+    if(filterVal === 'todos') return true;
+    let recStr = "";
+    if(c.timestamp) {
+      const d = new Date(c.timestamp);
+      recStr = `${String(d.getMonth()+1).padStart(2, '0')}/${d.getFullYear()}`;
+    } else if (c.date) {
+      const parts = c.date.split(',')[0].split('/');
+      if(parts.length >= 3) recStr = `${parts[1].padStart(2, '0')}/${parts[2]}`;
+    }
+    return filterVal === recStr;
+  });
+  
+  filtered.slice().reverse().forEach(c => {
     const tr = document.createElement("tr");
     const arr = (c.campos && c.campos.arrNombre) ? c.campos.arrNombre : ((c.fields && c.fields[3]) ? c.fields[3] : 'SIN NOMBRE');
     tr.innerHTML = `

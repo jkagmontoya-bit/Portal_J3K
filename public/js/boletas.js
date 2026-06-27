@@ -360,8 +360,40 @@ const KEY = "boleta_j3k_prolija_proyeccion_v3";
   function renderBoletasTable() {
     const tbody = document.getElementById('boletas-tbody');
     if(!tbody) return;
+    
+    const select = document.getElementById('filtroMes');
+    if (select && select.options.length <= 1 && boletasDB.length > 0) {
+      const periods = new Set();
+      boletasDB.forEach(boleta => {
+        if(boleta.periodo) periods.add(boleta.periodo);
+      });
+      const sorted = Array.from(periods).sort((a,b) => {
+        // basic sort, "Julio del 2026"
+        const yearA = a.split(' del ')[1] || "0";
+        const yearB = b.split(' del ')[1] || "0";
+        if(yearA !== yearB) return yearB.localeCompare(yearA);
+        return b.localeCompare(a); // rudimentary month sort
+      });
+      sorted.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p;
+        opt.textContent = p;
+        select.appendChild(opt);
+      });
+      const now = new Date();
+      const mesName = meses[now.getMonth()+1];
+      const curStr = `${mesName} del ${now.getFullYear()}`;
+      if (periods.has(curStr)) select.value = curStr;
+    }
+    
+    const filterVal = select ? select.value : 'todos';
+    const filtered = boletasDB.filter(boleta => {
+      if(filterVal === 'todos') return true;
+      return boleta.periodo === filterVal;
+    });
+
     tbody.innerHTML = '';
-    boletasDB.forEach(boleta => {
+    filtered.slice().reverse().forEach(boleta => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${J3K_UTILS.escapeHTML(boleta.cui)}</td>

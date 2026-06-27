@@ -75,9 +75,14 @@
 
 
 <div id="view-dashboard" class="view active">
-  <div class="toolbar" style="justify-content: space-between; display: flex;">
+  <div class="toolbar" style="justify-content: space-between; display: flex; align-items:center;">
     <h2 style="margin: 0; color: #fff; padding-left: 10px;">Bitácoras Vehiculares</h2>
-    <button type="button" class="green" onclick="nuevaBitacora()">+ Nueva Bitácora</button>
+    <div style="display:flex; align-items:center;">
+      <select id="filtroMes" onchange="renderDashboard()" style="padding: 6px; border-radius: 4px; border: 1px solid #ccc; margin-right: 10px;">
+        <option value="todos">Todos los meses</option>
+      </select>
+      <button type="button" class="green" onclick="nuevaBitacora()">+ Nueva Bitácora</button>
+    </div>
   </div>
   <div class="box" style="margin: 20px;">
     <table style="width: 100%; border-collapse: collapse; text-align: left;">

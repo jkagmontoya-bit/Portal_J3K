@@ -125,6 +125,42 @@ function guardarCompra() {
 
 // Render Dashboard
 function renderDashboard() {
+  const select = document.getElementById('filtroMes');
+  if (select && select.options.length <= 1 && DB_COMPRAS.length > 0) {
+    const months = new Set();
+    DB_COMPRAS.forEach(c => {
+      const ts = parseInt(c.id.replace('REQ-', ''));
+      if(!isNaN(ts)) {
+        const d = new Date(ts);
+        const mm = String(d.getMonth()+1).padStart(2, '0');
+        const yyyy = d.getFullYear();
+        months.add(`${mm}/${yyyy}`);
+      }
+    });
+    
+    // Sort descending
+    const sorted = Array.from(months).sort((a,b) => {
+      const [m1,y1] = a.split('/'); const [m2,y2] = b.split('/');
+      return (y2+m2).localeCompare(y1+m1);
+    });
+    
+    sorted.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m;
+      opt.textContent = m;
+      select.appendChild(opt);
+    });
+    
+    // Default to current month if available
+    const now = new Date();
+    const curM = String(now.getMonth()+1).padStart(2, '0');
+    const curY = now.getFullYear();
+    const curStr = `${curM}/${curY}`;
+    if (months.has(curStr)) {
+      select.value = curStr;
+    }
+  }
+
   const colReq = document.getElementById('col-req');
   const colCot = document.getElementById('col-cot');
   const colOc = document.getElementById('col-oc');
@@ -134,7 +170,21 @@ function renderDashboard() {
   
   let countReq = 0, countCot = 0, countOc = 0, countFac = 0;
   
-  DB_COMPRAS.forEach(c => {
+  const filterVal = select ? select.value : 'todos';
+  
+  const filtered = DB_COMPRAS.filter(c => {
+    if(filterVal === 'todos') return true;
+    const ts = parseInt(c.id.replace('REQ-', ''));
+    if(!isNaN(ts)) {
+      const d = new Date(ts);
+      const mm = String(d.getMonth()+1).padStart(2, '0');
+      const yyyy = d.getFullYear();
+      return filterVal === `${mm}/${yyyy}`;
+    }
+    return true;
+  });
+
+  filtered.forEach(c => {
     let printBtn = '';
     if (c.estado === 'Emitido' || c.estado === 'Facturado') {
       printBtn = `<button class="alt" style="margin-top:5px; width:100%; font-size:11px;" onclick="imprimirOC('${c.id}')">🖨️ Imprimir OC</button>`;

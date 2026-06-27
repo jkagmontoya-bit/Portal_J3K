@@ -169,8 +169,52 @@ let currentCUI = null;
   async function cargarDashboard() {
     const db = await localforage.getItem(STORAGE_KEY) || [];
     const tbody = document.getElementById("lista-bitacoras");
+    
+    const select = document.getElementById('filtroMes');
+    if (select && select.options.length <= 1 && db.length > 0) {
+      const months = new Set();
+      db.forEach(c => {
+        if(c.timestamp) {
+          const d = new Date(c.timestamp);
+          const mm = String(d.getMonth()+1).padStart(2, '0');
+          const yyyy = d.getFullYear();
+          months.add(`${mm}/${yyyy}`);
+        } else if (c.campos && c.campos.periodo) {
+          const parts = c.campos.periodo.split('/');
+          if(parts.length >= 2) months.add(`${parts[0].padStart(2, '0')}/${parts[1]}`);
+        }
+      });
+      const sorted = Array.from(months).sort((a,b) => {
+        const [m1,y1] = a.split('/'); const [m2,y2] = b.split('/');
+        return (y2+m2).localeCompare(y1+m1);
+      });
+      sorted.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m;
+        opt.textContent = m;
+        select.appendChild(opt);
+      });
+      const now = new Date();
+      const curStr = `${String(now.getMonth()+1).padStart(2, '0')}/${now.getFullYear()}`;
+      if (months.has(curStr)) select.value = curStr;
+    }
+    
+    const filterVal = select ? select.value : 'todos';
+    const filtered = db.filter(c => {
+      if(filterVal === 'todos') return true;
+      let recStr = "";
+      if(c.timestamp) {
+        const d = new Date(c.timestamp);
+        recStr = `${String(d.getMonth()+1).padStart(2, '0')}/${d.getFullYear()}`;
+      } else if (c.campos && c.campos.periodo) {
+        const parts = c.campos.periodo.split('/');
+        if(parts.length >= 2) recStr = `${parts[0].padStart(2, '0')}/${parts[1]}`;
+      }
+      return filterVal === recStr;
+    });
+
     tbody.innerHTML = "";
-    db.forEach(bit => {
+    filtered.forEach(bit => {
       const tr = document.createElement("tr");
       tr.style.borderBottom = "1px solid #ccc";
       const gasto = bit.campos?.totalGasto || "0.00";

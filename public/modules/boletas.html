@@ -71,13 +71,16 @@
 </head>
 
 <body>
-<a href="#contenido-principal" class="skip-link">Saltar al contenido principal</a>
-
-
-  <div id="view-dashboard" class="view active">
-    <div class="toolbar">
-      <button type="button" class="green" onclick="nuevaBoleta()">Nueva Boleta</button>
-    </div>
+<a href="#contenido-principal" class="skip-link">Saltar al contenido principal</a>    <div id="view-dashboard" class="view active">
+      <div class="toolbar" style="display:flex; justify-content:space-between; align-items:center;">
+        <h2 style="margin: 0; color: #004D33; padding-left: 10px;">Repositorio de Boletas</h2>
+        <div style="display:flex; align-items:center;">
+          <select id="filtroMes" onchange="renderBoletasTable()" style="padding: 6px; border-radius: 4px; border: 1px solid #ccc; margin-right: 10px;">
+            <option value="todos">Todos los meses</option>
+          </select>
+          <button type="button" class="green" onclick="nuevaBoleta()">Nueva Boleta</button>
+        </div>
+      </div>
     <div class="table-container">
       <table class="modern-table" id="boletas-table" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
         <thead>
