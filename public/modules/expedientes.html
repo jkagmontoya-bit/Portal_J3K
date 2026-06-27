@@ -887,6 +887,11 @@ function addFiles(i, files){
     const reader=new FileReader();
     reader.onload=e=>{
       state.processes[currentProcess].steps[i].files.push({name:file.name,type:file.type||"application/octet-stream",size:file.size,data:e.target.result,addedAt:new Date().toISOString()});
+      
+      if(CONFIG.processes[currentProcess].steps[i].name === "Entrega y conformidad") {
+        state.processes[currentProcess].steps[i].ok = true;
+      }
+      
       save(); render();
       if ((currentProcess === 'ventas' || currentProcess === 'compras') && i === 0) {
         procesarFacturaConIA(file, e.target.result);
