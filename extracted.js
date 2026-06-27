@@ -1,8 +1,9 @@
+
 const CONFIG = {"company": "J3K INGENIERÍA & DISEÑO S.A.C.", "ruc": "20612829561", "source": "matriz_editable_flujograma_J3K.xlsx", "processes": {"compras": {"key": "compras", "sourceName": "Compras", "label": "Compras", "icon": "🛒", "color": "green", "folder": "COMPRAS", "steps": [{"order": 1, "name": "Identificación de necesidad", "description": "Área solicita bien o servicio", "requiredDoc": "Requerimiento interno / correo / solicitud", "required": true, "responsible": "Área usuaria", "controlNote": "Sustenta causalidad del gasto", "action": ""}, {"order": 2, "name": "Cotización y evaluación", "description": "Se evalúan proveedores", "requiredDoc": "Cotizaciones / comparativo / evaluación", "required": true, "responsible": "Administración", "controlNote": "Ayuda a probar valor de mercado", "action": ""}, {"order": 3, "name": "Orden de compra / servicio", "description": "Se emite OC u OS", "requiredDoc": "OC / OS aprobada", "required": true, "responsible": "Administración", "controlNote": "Debe estar antes de la factura", "action": ""}, {"order": 4, "name": "Recepción / conformidad", "description": "Se recibe bien o servicio", "requiredDoc": "Guía / acta / conformidad / fotos", "required": true, "responsible": "Solicitante", "controlNote": "Sustenta fehaciencia", "action": ""}, {"order": 5, "name": "Factura del proveedor", "description": "Se valida comprobante", "requiredDoc": "Factura electrónica / XML / CDR", "required": true, "responsible": "Contabilidad", "controlNote": "Validar RUC, fecha, descripción", "action": ""}, {"order": 6, "name": "Registro contable", "description": "Se registra la compra", "requiredDoc": "Asiento / registro de compras", "required": true, "responsible": "Contabilidad", "controlNote": "Sustento contable", "action": ""}, {"order": 7, "name": "Pago al proveedor", "description": "Se paga por banco si corresponde", "requiredDoc": "Voucher bancario / detracción si aplica", "required": true, "responsible": "Tesorería", "controlNote": "Control de bancarización", "action": ""}, {"order": 8, "name": "Archivo documental", "description": "Se cierra expediente", "requiredDoc": "Índice del expediente", "required": true, "responsible": "Administración", "controlNote": "Carpeta completa", "action": ""}], "rules": [{"rule": "ZIP habilitado", "condition": "Todos los pasos obligatorios completos", "action": "Permite descargar ZIP", "note": ""}, {"rule": "Pago bancario", "condition": "Monto mayor o igual a S/ 2,000", "action": "Pedir voucher bancario", "note": "También considerar US$ 500."}, {"rule": "Detracción", "condition": "Si operación está sujeta", "action": "Pedir constancia de detracción", "note": ""}], "keyDocs": "Requerimiento interno / correo / solicitud; Cotizaciones / comparativo / evaluación; OC / OS aprobada; Guía / acta / conformidad / fotos; Factura electrónica / XML / CDR; Asiento / registro de compras; Voucher bancario / detracción si aplica; Índice del expediente"}, "ventas": {"key": "ventas", "sourceName": "Ventas", "label": "Ventas", "icon": "💵", "color": "blue", "folder": "VENTAS", "steps": [{"order": 1, "name": "FACTURA VENTA - FOMATO DE FACTURA xxxx-xxxxxxxx", "description": "Se sube la factura de venta y se da la cotización vinculada", "requiredDoc": "Factura y selección de cotización", "required": true, "responsible": "Administración / Comercial", "controlNote": "Prueba origen de la operación", "action": ""}, {"order": 2, "name": "Evidencias", "description": "Se realiza el trabajo", "requiredDoc": "Avances / fotos / planos / reportes", "required": true, "responsible": "Área técnica", "controlNote": "Prueba ejecución real", "action": ""}, {"order": 3, "name": "Entrega y conformidad", "description": "Cliente acepta entregable", "requiredDoc": "Acta / correo de conformidad", "required": true, "responsible": "Área técnica / Gerencia", "controlNote": "Clave para cobrar y facturar", "action": ""}, {"order": 4, "name": "PAGO y/o DETRACCION", "description": "Cliente paga", "requiredDoc": "Voucher de Pago / estado de cuenta", "required": true, "responsible": "Tesorería", "controlNote": "Control de cuentas por cobrar", "action": ""}], "rules": [{"rule": "Facturación", "condition": "Cliente aprueba o hay conformidad", "action": "Pedir factura emitida", "note": ""}, {"rule": "Cobranza", "condition": "Factura emitida", "action": "Pedir voucher o estado de cuenta", "note": ""}], "keyDocs": "Correo / solicitud / requerimiento; Propuesta / cotización / presupuesto; Contrato / OC / correo de aceptación; Avances / fotos / planos / reportes; Acta / correo de conformidad; Factura electrónica / XML / CDR; Voucher de Pago / estado de cuenta; Registro de ventas / asiento; Índice del expediente"}, "rh": {"key": "rh", "sourceName": "RH", "label": "Recibos por Honorarios", "icon": "👤", "color": "purple", "folder": "RECIBOS_POR_HONORARIOS", "steps": [{"order": 1, "name": "Requerimiento de servicio", "description": "Se define necesidad del servicio", "requiredDoc": "Requerimiento interno / alcance", "required": true, "responsible": "Área solicitante", "controlNote": "Sustenta causalidad", "action": ""}, {"order": 2, "name": "Selección del profesional", "description": "Se elige prestador", "requiredDoc": "CV / cotización / RUC / DNI", "required": true, "responsible": "Administración", "controlNote": "Evita gasto no fehaciente", "action": ""}, {"order": 3, "name": "Contrato u orden de servicio", "description": "Se pacta servicio independiente", "requiredDoc": "Contrato / OS / acuerdo", "required": true, "responsible": "Gerencia", "controlNote": "Evita riesgo laboral encubierto", "action": ""}, {"order": 4, "name": "Ejecución del servicio", "description": "Profesional realiza trabajo", "requiredDoc": "Avances / correos / reportes", "required": true, "responsible": "Responsable del proyecto", "controlNote": "Prueba realidad del servicio", "action": ""}, {"order": 5, "name": "Entrega de entregable", "description": "Se recibe resultado", "requiredDoc": "Entregable / conformidad", "required": true, "responsible": "Responsable del proyecto", "controlNote": "Clave para deducir gasto", "action": ""}, {"order": 6, "name": "Emisión de RH", "description": "Prestador emite recibo", "requiredDoc": "Recibo por honorarios electrónico", "required": true, "responsible": "Prestador / Contabilidad", "controlNote": "Sustento tributario", "action": ""}, {"order": 7, "name": "Retención 8%", "description": "Se evalúa retención", "requiredDoc": "Suspensión de 4ta / constancia de retención", "required": true, "responsible": "Contabilidad", "controlNote": "Si aplica por monto", "action": ""}, {"order": 8, "name": "Pago al prestador", "description": "Se paga por banco", "requiredDoc": "Voucher bancario", "required": true, "responsible": "Tesorería", "controlNote": "Bancarización si corresponde", "action": ""}, {"order": 9, "name": "Registro contable y PLAME", "description": "Se registra gasto", "requiredDoc": "Asiento / PLAME si corresponde", "required": true, "responsible": "Contabilidad", "controlNote": "Control laboral-tributario", "action": ""}, {"order": 10, "name": "Archivo documental", "description": "Se cierra expediente", "requiredDoc": "Índice del expediente", "required": true, "responsible": "Administración", "controlNote": "Carpeta completa", "action": ""}], "rules": [{"rule": "Retención 8%", "condition": "RH mayor a S/ 1,500 sin suspensión", "action": "Pedir constancia de retención", "note": ""}, {"rule": "Suspensión 4ta", "condition": "Prestador indica suspensión", "action": "Pedir constancia vigente", "note": ""}, {"rule": "Riesgo laboral", "condition": "Servicio recurrente o subordinado", "action": "Alertar revisión laboral", "note": ""}], "keyDocs": "Requerimiento interno / alcance; CV / cotización / RUC / DNI; Contrato / OS / acuerdo; Avances / correos / reportes; Entregable / conformidad; Recibo por honorarios electrónico; Suspensión de 4ta / constancia de retención; Voucher bancario; Asiento / PLAME si corresponde; Índice del expediente"}}};
 const KEY = "j3k_modulo_expedientes_final_v1";
 let currentProcess = Object.keys(CONFIG.processes)[0];
 
-function emptyStep(){ return {ok:false, na:false, obs:[], files:[]}; }
+function emptyStep(){ return {ok:false, na:false, obs:"", files:[]}; }
 function defaultState(){
   const s = {header:{anio:"2026", mes:"Junio"}, processes:{}};
   for (const k of Object.keys(CONFIG.processes)){
@@ -34,7 +35,7 @@ function loadState(){
 let state = loadState();
 
 function save(){
-  try{ saveToFirebase(KEY, state); localStorage.setItem(KEY, JSON.stringify(state)); }
+  try{ localStorage.setItem(KEY, JSON.stringify(state)); }
   catch(e){ console.warn("No se pudo guardar en localStorage.", e); }
 }
 function val(id){ return document.getElementById(id)?.value || ""; }
@@ -109,27 +110,28 @@ function isStepComplete(k,i){
   const step = CONFIG.processes[k].steps[i], st = state.processes[k].steps[i];
   if(!step.required) return true;
   if(st.na) return true;
-  return !!st.ok && st.files && st.files.length >= 1;
+  let reqFiles = 1;
+  if (k === 'ventas' && step.name === 'Cobranza' && state.processes[k].general.tieneDetraccionVenta) {
+     reqFiles = 2;
+  }
+  return !!st.ok && st.files && st.files.length >= reqFiles;
 }
 function stepStatus(k,i){
   const step = CONFIG.processes[k].steps[i], st = state.processes[k].steps[i];
   if(!step.required) return '<span class="pill info">Opcional</span>';
   if(st.na) return '<span class="pill ok">No aplica</span>';
   
-  let hasDetraccion = false;
-  if (k === 'ventas' && step.name === 'PAGO y/o DETRACCION' && state.processes[k].general.tieneDetraccionVenta) {
-     hasDetraccion = true;
+  let reqFiles = 1;
+  if (k === 'ventas' && step.name === 'Cobranza' && state.processes[k].general.tieneDetraccionVenta) {
+     reqFiles = 2;
   }
   
-  if(isStepComplete(k,i)) {
-      if (hasDetraccion && st.files && st.files.length === 1) {
-          return '<span class="pill warn" title="Se permite subir constancia en el futuro">✔ Falta detracción</span>';
-      }
-      return '<span class="pill ok">Completo</span>';
+  if(isStepComplete(k,i)) return '<span class="pill ok">Completo</span>';
+  if(st.ok && (!st.files || st.files.length < reqFiles)) {
+     if (reqFiles === 2 && st.files && st.files.length === 1) return '<span class="pill warn" title="Falta constancia de detracción">Falta detracción</span>';
+     return '<span class="pill warn">Falta archivo</span>';
   }
-  
-  if(st.ok && (!st.files || st.files.length < 1)) return '<span class="pill warn">Falta archivo</span>';
-  if(!st.ok && st.files && st.files.length >= 1) return '<span class="pill warn">Falta conformidad</span>';
+  if(!st.ok && st.files && st.files.length >= reqFiles) return '<span class="pill warn">Falta conformidad</span>';
   return '<span class="pill bad">Pendiente</span>';
 }
 
@@ -137,7 +139,7 @@ function saveCurrentToBuffer() {
   const g = state.processes[currentProcess].general;
   // Solo guardar en el historial si al menos tiene un identificador o algún dato
   if(g.expediente || g.tercero) {
-      let idx = Object.prototype.hasOwnProperty.call(state.saved, currentProcess) ? state.saved[currentProcess].findIndex(x => x.id === state.currentId[currentProcess]) : -1;
+      let idx = state.saved.hasOwnProperty(currentProcess) ? state.saved[currentProcess].findIndex(x => x.id === state.currentId[currentProcess]) : -1;
       const clone = JSON.parse(JSON.stringify(state.processes[currentProcess]));
       clone.id = state.currentId[currentProcess];
       clone.pct = processPct(currentProcess).pct;
@@ -243,12 +245,12 @@ function render(){
   
   const cotizacionVinculada = !!state.processes[currentProcess].general.docTercero;
 
-    if(currentProcess === 'ventas') {
-      if(expBlock) expBlock.style.display = 'none';
-      if(btnLink) btnLink.style.display = 'inline-block';
-      if(ventasHdr) ventasHdr.style.display = 'block';
-      if(ventasExtra) ventasExtra.style.display = 'flex';
-    } else {
+  if(currentProcess === 'ventas') {
+    if(expBlock) expBlock.style.display = 'none';
+    if(btnLink) btnLink.style.display = 'inline-block';
+    if(ventasHdr) ventasHdr.style.display = cotizacionVinculada ? 'block' : 'none';
+    if(ventasExtra) ventasExtra.style.display = cotizacionVinculada ? 'flex' : 'none';
+  } else {
     if(expBlock) expBlock.style.display = 'block';
     if(ventasHdr) ventasHdr.style.display = 'none';
     if(ventasExtra) ventasExtra.style.display = 'none';
@@ -381,24 +383,8 @@ function renderWorkSteps(){
       </div>
       ${(currentProcess === 'ventas' && i === 3 && state.processes[currentProcess].general.tieneDetraccionVenta) ? '<div style="background:#fef3c7; border:1px solid #f59e0b; border-radius:6px; padding:10px; margin:8px 0; color:#92400e; font-size:13px;"><b>⚠️ Recordatorio:</b> Esta operación tiene detracción. Debe subir el <b>Voucher de Pago</b> y la <b>Constancia de Detracción</b> (2 archivos).</div>' : ''}
       <div class="step-bottom">
-        <div style="flex:1;">
-          <label>Observaciones / referencias</label>
-          <div id="obs-list-${i}" style="max-height:120px; overflow-y:auto; margin-bottom:6px;">
-            ${(Array.isArray(st.obs) ? st.obs : (st.obs ? [{text: st.obs, date: new Date().toISOString()}] : [])).map((o, oIdx) => {
-               let d = new Date(o.date);
-               let dateStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-               return `<div style="display:flex; justify-content:space-between; align-items:start; background:#f8fafc; padding:6px; border-radius:4px; margin-bottom:4px; font-size:11px;">
-                 <div style="flex:1;"><b style="color:#64748b; font-size:10px;">${dateStr}</b><br>${esc(o.text)}</div>
-                 <button onclick="removeObs(${i}, ${oIdx})" style="background:transparent; color:#ef4444; border:none; padding:2px 5px; font-size:10px;" title="Eliminar observación">✖</button>
-               </div>`;
-            }).join("")}
-          </div>
-          <div style="display:flex; gap:6px;">
-            <textarea id="new-obs-${i}" placeholder="Añadir observación... (Ej.: factura, OC, voucher)" style="min-height:36px; height:36px; padding:4px; font-size:11px; flex:1;"></textarea>
-            <button onclick="addObs(${i}, document.getElementById('new-obs-${i}').value); document.getElementById('new-obs-${i}').value='';" style="padding:4px 8px; font-size:11px; white-space:nowrap; align-self:start;">Añadir</button>
-          </div>
-        </div>
-        <div style="margin-left:15px;"><label>Estado</label><div style="padding-top:7px;">${stepStatus(currentProcess,i)}</div></div>
+        <div><label>Observación / referencia</label><textarea oninput="setObs(${i}, this.value)" placeholder="Ej.: factura, OC, voucher, correo, observación.">${esc(st.obs||"")}</textarea></div>
+        <div><label>Estado</label><div style="padding-top:7px;">${stepStatus(currentProcess,i)}</div></div>
       </div>
       <div class="file-list" id="files-${i}"></div>`;
     box.appendChild(div);
@@ -411,15 +397,13 @@ function renderWorkSteps(){
 window.confirmCotizacion = function(i, selectEl) {
   const val = selectEl.value;
   if(!val) {
+    state.processes[currentProcess].steps[i].obs = '';
     save(); render();
     return;
   }
   if(confirm("¿Confirmas que deseas vincular la cotización " + val + " y dar por cumplido este paso?")) {
-    const st = state.processes[currentProcess].steps[i];
-    if (typeof st.obs === 'string') st.obs = st.obs.trim() ? [{text: st.obs, date: new Date().toISOString()}] : [];
-    else if (!Array.isArray(st.obs)) st.obs = [];
-    st.obs.push({text: "Cotización vinculada: " + val, date: new Date().toISOString()});
-    st.ok = true;
+    state.processes[currentProcess].steps[i].obs = val;
+    state.processes[currentProcess].steps[i].ok = true;
     
     // Auto-fill header fields
     const cot = (window.cotizaciones_db || []).find(c => c.cui === val);
@@ -433,25 +417,13 @@ window.confirmCotizacion = function(i, selectEl) {
     
     save(); render();
   } else {
-    selectEl.value = '';
+    selectEl.value = state.processes[currentProcess].steps[i].obs || '';
   }
 };
 
 function setOk(i,v){ state.processes[currentProcess].steps[i].ok = v==="si"; save(); render(); }
 function setNA(i,checked){ const st=state.processes[currentProcess].steps[i]; st.na=checked; if(checked) st.ok=true; save(); render(); }
-function addObs(i,v){ 
-  if(!v.trim()) return;
-  const st = state.processes[currentProcess].steps[i];
-  if (typeof st.obs === 'string') st.obs = st.obs.trim() ? [{text: st.obs, date: new Date().toISOString()}] : [];
-  else if (!Array.isArray(st.obs)) st.obs = [];
-  st.obs.push({text: v.trim(), date: new Date().toISOString()});
-  save(); render(); 
-}
-function removeObs(i, oIdx){
-  if(!confirm("¿Eliminar esta observación?")) return;
-  const st = state.processes[currentProcess].steps[i];
-  if(Array.isArray(st.obs)) { st.obs.splice(oIdx, 1); save(); render(); }
-}
+function setObs(i,v){ state.processes[currentProcess].steps[i].obs=v; save(); renderLite(); }
 function addFiles(i, files){
   if(currentProcess === 'ventas') {
     const currentFiles = state.processes[currentProcess].steps[i].files || [];
@@ -473,7 +445,7 @@ function addFiles(i, files){
     reader.onload=e=>{
       state.processes[currentProcess].steps[i].files.push({name:file.name,type:file.type||"application/octet-stream",size:file.size,data:e.target.result,addedAt:new Date().toISOString()});
       
-      if(CONFIG.processes[currentProcess].steps[i].name === "Entrega y conformidad" || CONFIG.processes[currentProcess].steps[i].name === "PAGO y/o DETRACCION") {
+      if(CONFIG.processes[currentProcess].steps[i].name === "Entrega y conformidad" || CONFIG.processes[currentProcess].steps[i].name === "Cobranza") {
         state.processes[currentProcess].steps[i].ok = true;
       }
       
@@ -507,11 +479,7 @@ async function procesarFacturaConIA(file, dataUrl) {
 {
   "razon_social": "Razón social del emisor de la factura (Proveedor/Prestador/Cliente)",
   "ruc": "Número de RUC o DNI",
-  "monto": "El importe total a pagar, numérico (ej. 1500.50)",
-  "numero_factura": "El número de la factura o comprobante (ej. E001-456)",
-  "proyecto": "Nombre del proyecto u obra si se menciona explícitamente, sino vacío",
-  "descripcion": "Descripción breve del servicio o bien facturado",
-  "tiene_detraccion": true si el documento menciona 'operación sujeta a SPOT', 'detracción', o tiene un porcentaje de detracción, false de lo contrario
+  "monto": "El importe total a pagar, numérico (ej. 1500.50)"
 }
 Si no encuentras algún dato, usa "". Devuelve SOLO el JSON, sin bloques de código ni texto adicional.`;
 
@@ -546,35 +514,7 @@ Si no encuentras algún dato, usa "". Devuelve SOLO el JSON, sin bloques de cód
     if(data.razon_social) document.getElementById("tercero").value = data.razon_social;
     if(data.ruc) document.getElementById("docTercero").value = data.ruc;
     
-    if(data.numero_factura) {
-       const elNumFac = document.getElementById("numeroFacturaVenta");
-       if (elNumFac) elNumFac.value = data.numero_factura;
-    }
-    
-    if(data.proyecto) document.getElementById("proyecto").value = data.proyecto;
-    if(data.descripcion) document.getElementById("descripcion").value = data.descripcion;
-
     if(data.monto && !isNaN(parseFloat(data.monto))) {
-      document.getElementById("monto").value = parseFloat(data.monto);
-    }
-    
-    if(data.tiene_detraccion === true) {
-       const elDet = document.getElementById("tieneDetraccionVenta");
-       if(elDet) elDet.checked = true;
-       // force save of general state for detraccion
-       state.processes[currentProcess].general.tieneDetraccionVenta = true;
-    }
-
-    saveCurrent();
-
-    setTimeout(() => {
-      const resp = prompt("Factura analizada.\\n\\n¿Quién es el responsable interno o ingeniero residente?");
-      if(resp) {
-        document.getElementById("responsable").value = resp;
-        saveCurrent();
-      }
-    }, 300);
-
       const currentMonto = parseFloat(document.getElementById("monto").value) || 0;
       const aiMonto = parseFloat(data.monto);
       
@@ -585,6 +525,7 @@ Si no encuentras algún dato, usa "". Devuelve SOLO el JSON, sin bloques de cód
       } else {
          document.getElementById("monto").value = aiMonto.toFixed(2);
       }
+    }
     saveCurrent();
   } catch (e) {
     console.error("Error al procesar con IA:", e);
@@ -653,12 +594,12 @@ function clearCurrent(){
 
 function buildIndex(processKey){
   const p=CONFIG.processes[processKey], s=state.processes[processKey];
-  return {empresa:CONFIG.company,ruc:CONFIG.ruc,periodo:state.header,proceso:p.label,proceso_key:processKey,expediente:s.general,progreso:processPct(processKey),pasos:p.steps.map((step,i)=>({orden:i+1,nombre:step.name,descripcion:step.description,documento_requerido:step.requiredDoc,obligatorio:step.required,responsable:step.responsible,observacion_control:step.controlNote,conforme:s.steps[i].ok,no_aplica:s.steps[i].na,observaciones:Array.isArray(s.steps[i].obs)?s.steps[i].obs:(s.steps[i].obs?[{text:s.steps[i].obs,date:new Date().toISOString()}]:[]),archivos:(s.steps[i].files||[]).map(f=>({nombre:f.name,tipo:f.type,tamano:f.size,fecha_carga:f.addedAt}))})),generado:new Date().toISOString(),fuente:CONFIG.source};
+  return {empresa:CONFIG.company,ruc:CONFIG.ruc,periodo:state.header,proceso:p.label,proceso_key:processKey,expediente:s.general,progreso:processPct(processKey),pasos:p.steps.map((step,i)=>({orden:i+1,nombre:step.name,descripcion:step.description,documento_requerido:step.requiredDoc,obligatorio:step.required,responsable:step.responsible,observacion_control:step.controlNote,conforme:s.steps[i].ok,no_aplica:s.steps[i].na,observacion:s.steps[i].obs,archivos:(s.steps[i].files||[]).map(f=>({nombre:f.name,tipo:f.type,tamano:f.size,fecha_carga:f.addedAt}))})),generado:new Date().toISOString(),fuente:CONFIG.source};
 }
 function buildSummaryText(processKey){
   const idx=buildIndex(processKey);
   let txt=`EXPEDIENTE DIGITAL J3K\nEmpresa: ${idx.empresa}\nRUC: ${idx.ruc}\nProceso: ${idx.proceso}\nPeriodo: ${idx.periodo.mes} ${idx.periodo.anio}\nExpediente: ${idx.expediente.expediente||"-"}\nTercero: ${idx.expediente.tercero||"-"}\nDocumento tercero: ${idx.expediente.docTercero||"-"}\nMonto: ${idx.expediente.monto||"-"}\nProyecto/Área: ${idx.expediente.proyecto||"-"}\nResponsable: ${idx.expediente.responsable||"-"}\nProgreso: ${idx.progreso.pct}%\nGenerado: ${idx.generado}\n\nPASOS\n`;
-  idx.pasos.forEach(p=>{ txt+=`\n${p.orden}. ${p.nombre}\nObligatorio: ${p.obligatorio?"SI":"NO"} | Conforme: ${p.conforme?"SI":"NO"} | No aplica: ${p.no_aplica?"SI":"NO"}\nDocumentos requeridos: ${p.documento_requerido||"-"}\nObservaciones: ${p.observaciones && p.observaciones.length>0 ? p.observaciones.map(o=>o.text).join(" | ") : "-"}\nArchivos: ${(p.archivos||[]).map(a=>a.nombre).join(", ")||"-"}\n`; });
+  idx.pasos.forEach(p=>{ txt+=`\n${p.orden}. ${p.nombre}\nObligatorio: ${p.obligatorio?"SI":"NO"} | Conforme: ${p.conforme?"SI":"NO"} | No aplica: ${p.no_aplica?"SI":"NO"}\nDocumentos requeridos: ${p.documento_requerido||"-"}\nObservación: ${p.observacion||"-"}\nArchivos: ${(p.archivos||[]).map(a=>a.nombre).join(", ")||"-"}\n`; });
   return txt;
 }
 function downloadIndex(){
@@ -676,7 +617,7 @@ function entriesForProcess(processKey, rootPrefix=""){
   entries.push({name:folder+"00_RESUMEN_EXPEDIENTE.txt", data:strBytes(buildSummaryText(processKey))});
   p.steps.forEach((step,i)=>{
     const stepFolder=folder+String(i+1).padStart(2,"0")+"_"+safeName(step.name)+"/";
-    const meta={paso:i+1,nombre:step.name,documento_requerido:step.requiredDoc,obligatorio:step.required,responsable:step.responsible,control:step.controlNote,estado:stepStatusText(processKey,i),observaciones:Array.isArray(s.steps[i].obs)?s.steps[i].obs:(s.steps[i].obs?[{text:s.steps[i].obs,date:new Date().toISOString()}]:[]),archivos:(s.steps[i].files||[]).map(f=>f.name)};
+    const meta={paso:i+1,nombre:step.name,documento_requerido:step.requiredDoc,obligatorio:step.required,responsable:step.responsible,control:step.controlNote,estado:stepStatusText(processKey,i),observacion:s.steps[i].obs||"",archivos:(s.steps[i].files||[]).map(f=>f.name)};
     entries.push({name:stepFolder+"metadata_paso.json", data:strBytes(JSON.stringify(meta,null,2))});
     (s.steps[i].files||[]).forEach((f,idx)=>entries.push({name:stepFolder+String(idx+1).padStart(2,"0")+"_"+safeName(f.name), data:dataUrlBytes(f.data)}));
   });
@@ -767,10 +708,6 @@ async function openCotizacionModal() {
   try {
     const db = await localforage.getItem('cotizaciones_db');
     const dbArray = Array.isArray(db) ? db : (db && db.quotes ? db.quotes : []);
-    if(dbArray.length === 0) {
-      alert("No hay cotizaciones registradas en el repositorio.");
-      return;
-    }
     const aprobadas = dbArray.filter(q => q.estado === "APROBADA");
     if(aprobadas.length === 0) {
       alert("No se encontraron cotizaciones con estado APROBADA.");
@@ -780,18 +717,18 @@ async function openCotizacionModal() {
     const tbody = document.getElementById("cotizacionesListBody");
     tbody.innerHTML = "";
     aprobadas.forEach((q, idx) => {
-        let totalFacturas = 0;
-        if(state.processes && state.processes.ventas && state.processes.ventas.list) {
-          state.processes.ventas.list.forEach(v => {
-            if(v.general && v.general.cotizacionCUI === q.cui) {
-              totalFacturas += parseFloat(v.general.monto) || 0;
-            }
-          });
-        }
-        const facturado = totalFacturas > 0 ? totalFacturas : (Number(q.montoFacturado) || 0);
-        const total = Number(q.total) || 0;
-        let pendiente = total - facturado;
-        if (pendiente < 0) pendiente = 0;
+      let totalFacturas = 0;
+      if(state.processes && state.processes.ventas && state.processes.ventas.list) {
+        state.processes.ventas.list.forEach(v => {
+          if(v.general && v.general.cotizacionCUI === q.cui) {
+            totalFacturas += parseFloat(v.general.monto) || 0;
+          }
+        });
+      }
+      const facturado = totalFacturas > 0 ? totalFacturas : (Number(q.montoFacturado) || 0);
+      const total = Number(q.total) || 0;
+      let pendiente = total - facturado;
+      if (pendiente < 0) pendiente = 0;
       
       const tr = document.createElement("tr");
       tr.innerHTML = `
