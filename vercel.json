@@ -1,0 +1,12 @@
+{
+  "framework": null,
+  "buildCommand": "echo 'No build required for Vanilla JS'",
+  "outputDirectory": ".",
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/public/modules/inicio.html",
+      "permanent": false
+    }
+  ]
+}
