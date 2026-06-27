@@ -1295,10 +1295,6 @@ async function openCotizacionModal() {
   try {
     const db = await localforage.getItem('cotizaciones_db');
     const dbArray = Array.isArray(db) ? db : (db && db.quotes ? db.quotes : []);
-    if(dbArray.length === 0) {
-      alert("No hay cotizaciones registradas en el repositorio.");
-      return;
-    }
     const aprobadas = dbArray.filter(q => q.estado === "APROBADA");
     if(aprobadas.length === 0) {
       alert("No se encontraron cotizaciones con estado APROBADA.");
@@ -1308,7 +1304,15 @@ async function openCotizacionModal() {
     const tbody = document.getElementById("cotizacionesListBody");
     tbody.innerHTML = "";
     aprobadas.forEach((q, idx) => {
-      const facturado = Number(q.montoFacturado) || 0;
+      let totalFacturas = 0;
+      if(state.processes && state.processes.ventas && state.processes.ventas.list) {
+        state.processes.ventas.list.forEach(v => {
+          if(v.general && v.general.cotizacionCUI === q.cui) {
+            totalFacturas += parseFloat(v.general.monto) || 0;
+          }
+        });
+      }
+      const facturado = totalFacturas > 0 ? totalFacturas : (Number(q.montoFacturado) || 0);
       const total = Number(q.total) || 0;
       let pendiente = total - facturado;
       if (pendiente < 0) pendiente = 0;
@@ -1365,20 +1369,8 @@ async function selectCotizacion(idx) {
   
   saveCurrent();
 
-  // Actualizar la cotización en la DB para restar el saldo
-  try {
-    const db = await localforage.getItem('cotizaciones_db');
-    const dbArray = Array.isArray(db) ? db : (db && db.quotes ? db.quotes : []);
-    const dbQuote = dbArray.find(x => x.cui === q.cui);
-    if(dbQuote) {
-      dbQuote.montoFacturado = (Number(dbQuote.montoFacturado) || 0) + montoFactura;
-      await localforage.setItem('cotizaciones_db', dbArray);
-      alert(`Cotización ${q.cui} vinculada con éxito.\nEl repositorio ha actualizado el saldo pendiente.`);
-    }
-  } catch(e) {
-    console.error(e);
-    alert("Error al intentar actualizar el saldo de la cotización en la base de datos.");
-  }
+  // La cotización actualizará su saldo dinámicamente en el modal
+  alert(`Cotización ${q.cui} vinculada con éxito.\nEl repositorio calculará el saldo pendiente automáticamente.`);
   
   document.getElementById("cotizacionModal").style.display = "none";
 }
