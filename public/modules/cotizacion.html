@@ -29,7 +29,11 @@
 <div class="view active" id="view-dashboard">
   <div class="header-bar">
     <h1>Repositorio de Propuestas Técnico-Económicas</h1>
-    <div>
+    <div id="authBar" style="margin:10px 0;">
+  <span id="userInfo"></span>
+  <button id="loginBtn" class="alt" onclick="loginWithGoogle()" style="margin-left:10px;">🔐 Iniciar sesión</button>
+</div>
+<div>
       
       <button class="alt" onclick="configurarSeguridad()" style="border-color: #64748B; color: #475569;">🔐 Seguridad</button>
       <button class="alt" onclick="verPapelera()" style="border-color: #ef4444; color: #ef4444;">🗑️ Papelera</button>

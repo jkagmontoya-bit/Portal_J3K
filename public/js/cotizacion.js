@@ -896,4 +896,15 @@ Si no encuentras un dato, déjalo vacío (""). Para "total", extrae SOLO EL NÚM
     }
   }
 
+  if (window.waitForAuth) {
+    window.waitForAuth().then(() => initDB());
+  } else {
+  if (window.waitForAuth) {
+  window.waitForAuth().then(user => {
+    if (user) initDB();
+    else console.log('Usuario no autenticado, DB no se carga');
+  });
+} else {
   initDB();
+}
+  }

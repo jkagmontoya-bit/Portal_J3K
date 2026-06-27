@@ -20,9 +20,31 @@ if (typeof firebase.auth === 'function') {
   auth = firebase.auth();
   window.firebaseAuth = auth;
 }
+if (auth) {
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      // Recargar página tras autenticación para actualizar cotizaciones
+      location.reload();
+    }
+  });
+}
+window.waitForAuth = function() {
+  return new Promise((resolve) => {
+    if (window.firebaseAuth) {
+      const unsubscribe = window.firebaseAuth.onAuthStateChanged((user) => {
+        unsubscribe();
+        resolve(user);
+      });
+    } else {
+      resolve(null);
+    }
+  });
+};
 // Universal function to sync DB updates
 window.saveToFirebase = async function(path, data) {
   try {
+    // Ensure user is authenticated before writing
+    if (window.waitForAuth) await window.waitForAuth();
     await db.ref(path).set(data);
   } catch (error) {
     console.error("Firebase save error:", error);
@@ -32,6 +54,8 @@ window.saveToFirebase = async function(path, data) {
 
 window.loadFromFirebase = async function(path) {
   try {
+    // Ensure user is authenticated before reading
+    if (window.waitForAuth) await window.waitForAuth();
     const snapshot = await db.ref(path).once('value');
     return snapshot.val();
   } catch (error) {
