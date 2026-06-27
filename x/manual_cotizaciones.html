@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Manual de Usuario - Cotizaciones J3K</title>
+  <style>
+    :root {
+      --j3k-dark: #004d33;
+      --j3k-light: #d2f0d2;
+      --j3k-accent: #f59e0b;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      background: #f8fafc;
+    }
+    .page-container {
+      background: white;
+      padding: 50px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: var(--j3k-dark);
+      border-bottom: 2px solid var(--j3k-light);
+      padding-bottom: 10px;
+    }
+    h2 {
+      color: #1e293b;
+      margin-top: 30px;
+    }
+    h3 {
+      color: #475569;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-right: 5px;
+    }
+    .badge-simple { background: #bae6fd; color: #0369a1; }
+    .badge-ext { background: #dcfce7; color: #166534; }
+    .badge-extn { background: #fef08a; color: #854d0e; }
+    
+    .alert {
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+      border-left: 5px solid;
+    }
+    .alert-tip { background: #f0fdf4; border-color: #22c55e; }
+    .alert-warn { background: #fffbeb; border-color: #f59e0b; }
+    .alert-danger { background: #fef2f2; border-color: #ef4444; }
+    .alert-info { background: #eff6ff; border-color: #3b82f6; }
+    
+    .card-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 20px 0;
+    }
+    .card {
+      padding: 20px;
+      border: 2px solid var(--j3k-light);
+      border-radius: 8px;
+      text-align: center;
+    }
+    .card-icon { font-size: 40px; margin-bottom: 10px; }
+    
+    @media print {
+      body { background: white; padding: 0; }
+      .page-container { box-shadow: none; padding: 0; }
+      .alert { break-inside: avoid; }
+      .card-grid { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <h1>📘 Manual de Usuario: Módulo de Cotizaciones</h1>
+    <p>Bienvenido al sistema inteligente de gestión comercial de <strong>J3K Ingenieros</strong>. Este módulo está diseñado para centralizar, automatizar y estandarizar la creación de Propuestas Técnico-Económicas.</p>
+    
+    <h2>1. Acceso y Panel Principal (Dashboard)</h2>
+    <p>Al ingresar al módulo con tu cuenta autorizada, verás el <strong>Repositorio Principal</strong>. Aquí se almacenan de forma segura todas las cotizaciones de la empresa.</p>
+    
+    <div class="alert alert-tip">
+      <strong>💡 Identificación Rápida:</strong> Cada fila tiene una etiqueta de color para que reconozcas el tipo de documento:
+      <ul style="margin-top: 10px;">
+        <li><span class="badge badge-simple">[SIMPLE]</span> Cotizaciones de 1 hoja (suministros rápidos).</li>
+        <li><span class="badge badge-ext">[EXTENDIDA]</span> Propuestas detalladas de múltiples hojas.</li>
+        <li><span class="badge badge-extn">[EXTERNA]</span> Cotizaciones hechas en Word/Excel y subidas manualmente.</li>
+      </ul>
+    </div>
+
+    <h2>2. Creando una Nueva Cotización</h2>
+    <p>Haz clic en el botón verde <strong>+ Nueva Propuesta</strong>. El sistema te preguntará qué formato deseas usar:</p>
+    
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">📄</div>
+        <h3>Cotización Simple</h3>
+        <p>Ideal para la venta directa de productos o servicios puntuales. Genera un <strong>PDF de 1 sola página</strong> con la tabla de precios, cuentas bancarias y un gran logo de marca de agua.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📑</div>
+        <h3>Propuesta Extendida</h3>
+        <p>Ideal para proyectos grandes. Genera un <strong>PDF de múltiples hojas</strong> que incluye carátula, secciones redactadas para Objetivos, Metodología, Software a usar, y Equipo de Trabajo.</p>
+      </div>
+    </div>
+
+    <h2>3. ✨ La Magia de la IA: Autocompletado</h2>
+    <p>¿El cliente te envió los Términos de Referencia en un PDF inmenso o te mandó un correo detallado? ¡No escribas a mano!</p>
+    <ol>
+      <li>En la primera pestaña de tu nueva cotización, baja hasta la sección <strong>Sustento de Origen</strong>.</li>
+      <li>Sube el PDF del cliente (incluso si es un escaneo o captura de pantalla).</li>
+      <li>Aparecerá el botón <strong>✨ Autocompletar con IA</strong>.</li>
+      <li>Haz clic y espera unos segundos. La IA extraerá el RUC, la Empresa, el Proyecto y armará automáticamente la tabla de precios.</li>
+    </ol>
+
+    <h2>4. Llenando la Tabla de Precios</h2>
+    <p>La tabla de precios tiene características avanzadas:</p>
+    <ul>
+      <li><strong>Botón + Agregar Ítem:</strong> Añade una nueva fila al final.</li>
+      <li><strong>Casilla "Es Sub-item":</strong> Si la marcas, esa fila se convertirá en una "sub-tarea" (ej. <em>a. Ingeniería Básica</em>), no se le pedirá cantidad, se imprimirá en cursiva con sangría, y su precio se sumará silenciosamente al total.</li>
+      <li><strong>Cálculo de IGV:</strong> En la cabecera puedes elegir si la cotización suma IGV (18%) o es Inafecta.</li>
+    </ul>
+
+    <h2>5. Herramientas de Redacción (Formato Extendido)</h2>
+    <p>Si elegiste la Propuesta Extendida, verás múltiples pestañas con <strong>Editores Avanzados</strong> (tipo Microsoft Word).</p>
+    <ul>
+      <li>Puedes usar negritas, cursivas, viñetas numéricas y alinear texto.</li>
+      <li><strong>Tablas Dinámicas:</strong> En la pestaña "3. Metodología", simplemente haz clic en <em>+ Agregar Equipo</em> o <em>+ Agregar Software</em> y llena las celdas; el sistema armará las tablas matemáticamente perfectas en el PDF final.</li>
+    </ul>
+
+    <h2>6. Registro de Cotizaciones Externas</h2>
+    <p>Si por algún motivo tuviste que hacer una cotización en Excel, regístrala para no perder el correlativo del CUI.</p>
+    <ol>
+      <li>Haz clic en el botón azul <strong>📥 Registrar Externa</strong>.</li>
+      <li>Ingresa el CUI que le diste manualmente.</li>
+      <li>Sube el PDF final para que quede guardado en el servidor.</li>
+    </ol>
+
+    <h2>7. Seguridad y Auditoría</h2>
+    <p>Para proteger la información, el módulo cuenta con 3 anillos de seguridad:</p>
+    
+    <div class="alert alert-danger">
+      <strong>🛡️ 1. PIN Maestro de Eliminación</strong><br>
+      Nadie puede borrar una cotización con un simple clic. El sistema exigirá el Nombre del trabajador y el PIN de Seguridad configurado por Gerencia.
+    </div>
+    
+    <div class="alert alert-warn">
+      <strong>🗑️ 2. Papelera de Reciclaje (7 Días)</strong><br>
+      Los documentos borrados viajan a la Papelera. Puedes restaurarlos si fue un error. Todo documento que cumpla 7 días en la papelera será evaporado permanentemente.
+    </div>
+
+    <div class="alert alert-info">
+      <strong>🕒 3. Bitácora de Auditoría</strong><br>
+      Al lado del CUI de cada cotización, hay un botón de reloj (🕒). Haz clic para abrir la bitácora forense de ese documento y ver quién lo creó, quién lo modificó y en qué fecha.
+    </div>
+
+  </div>
+  <script>
+    window.onload = () => { window.print(); }
+  </script>
+</body>
+</html>

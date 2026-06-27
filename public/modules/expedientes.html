@@ -468,6 +468,11 @@ aside .upload-box, aside .notice, aside .custom-row span {
         <div class="subtitle">Compras, Ventas y Recibos por Honorarios</div>
         <div class="company">Generado desde la matriz editable de flujograma J3K</div>
       </div>
+      <div id="multi-expediente-ui" style="display:none; align-items:center; gap:10px; margin-bottom: 10px; padding: 10px; background: rgba(0,0,0,0.05); border-radius: 8px;">
+         <label style="font-weight:bold; margin:0;">Expediente Activo:</label>
+         <select id="expedienteSelector" onchange="switchExpediente(this.value)" style="padding:5px; border-radius:4px; margin:0; flex:1;"></select>
+         <button onclick="newExpediente()" class="alt" style="padding:6px 12px; margin:0;">➕ Nuevo</button>
+      </div>
       <div class="period">
         <div><label>Año</label><input id="anio" type="number" min="2024" value="2026" onchange="saveHeader()"></div>
         <div><label>Mes</label><select aria-label="Seleccionar opción" id="mes" onchange="saveHeader()"><option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option><option>Mayo</option><option selected>Junio</option><option>Julio</option><option>Agosto</option><option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option></select></div>

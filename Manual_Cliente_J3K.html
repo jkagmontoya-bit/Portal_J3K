@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Guía del Cliente: J3K</title>
+    <style>
+        body { font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.6; color: #334155; max-width: 900px; margin: 0 auto; padding: 40px 20px; background-color: #f8fafc; }
+        .container { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        h1 { color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; font-size: 28px; }
+        h2 { color: #0369a1; margin-top: 30px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; font-size: 22px; }
+        h3 { color: #0f172a; margin-top: 20px; font-size: 18px; }
+        p, li { margin-bottom: 14px; font-size: 16px; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 15px; }
+        th, td { border: 1px solid #cbd5e1; padding: 12px; text-align: left; }
+        th { background-color: #f1f5f9; color: #0f172a; font-weight: bold; }
+        .alert-note { background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 16px; margin: 20px 0; border-radius: 0 8px 8px 0; font-size: 15px; }
+        .alert-important { background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 16px; margin: 20px 0; border-radius: 0 8px 8px 0; font-size: 15px; }
+        .mermaid { margin: 30px 0; text-align: center; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        ul, ol { padding-left: 20px; }
+        @media print {
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; padding: 0; border: none; }
+        }
+    </style>
+    <!-- Solo cargamos Mermaid, sin parsers de markdown que puedan fallar -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({ startOnLoad: true, theme: 'default' });</script>
+</head>
+<body>
+    <div class="container">
+        <h1>📘 Guía del Cliente: Trabajando con J3K Ingeniería & Diseño</h1>
+        <p>Bienvenido. En <strong>J3K Ingeniería & Diseño S.A.C.</strong> nuestro compromiso principal es la eficiencia tecnológica y la transparencia. Por eso, hemos digitalizado todos nuestros flujos operativos a través de nuestro <strong>Portal Corporativo Exclusivo</strong>.</p>
+        <p>El objetivo de esta guía es mostrarte de manera detallada y visual cómo interactuamos contigo, asegurando que desde tu primera solicitud hasta la entrega final del proyecto, tengas control y visibilidad total.</p>
+
+        <h2>1. El Camino de tu Proyecto (Visión General) 🗺️</h2>
+        <p>Todo servicio que desarrollamos para ti sigue un ciclo de vida estricto y auditable por nuestro sistema.</p>
+        <div class="mermaid">
+journey
+    title Experiencia del Cliente en J3K
+    section Inicio
+      Solicitud de Requerimiento: 5: Cliente
+      Recepción y Análisis: 4: J3K
+    section Propuesta
+      Emisión de Cotización (PDF): 5: J3K
+      Aprobación y OC: 5: Cliente
+    section Ejecución
+      Despliegue Técnico: 4: J3K
+      Supervisión de Avances: 4: J3K
+    section Cierre
+      Conformidad del Servicio: 5: Cliente
+      Facturación Electrónica: 5: J3K
+        </div>
+
+        <h2>2. ¿Cómo solicitar un servicio? 📥</h2>
+        <p>Para evitar correos interminables y garantizar que entendemos exactamente lo que necesitas desde el minuto cero, hemos estandarizado nuestro formato de recepción.</p>
+        <h3>Paso a paso:</h3>
+        <ol>
+            <li><strong>Accede a nuestro Portal:</strong> Entra a la página web que te hayamos proporcionado.</li>
+            <li><strong>Descarga el Formato Oficial:</strong> En la esquina inferior derecha encontrarás un botón flotante con el ícono 📥. Al pulsarlo, descargarás el archivo <strong>Formato_Requerimiento_J3K_Premium.xlsx</strong>.</li>
+            <li><strong>Llena la información:</strong> Completa las celdas marcadas con tus datos y los detalles técnicos de tu necesidad (metrados, planos, ubicaciones).</li>
+            <li><strong>Envío:</strong> Remite ese archivo a tu contacto comercial en J3K.</li>
+        </ol>
+        <div class="mermaid">
+flowchart LR
+    A([Descargar Formato .xlsx]) --> B([Llenar Datos Técnicos])
+    B --> C([Enviar por Correo a J3K])
+    C --> D{Ingreso al Portal J3K}
+    D -->|Procesamiento| E((Evaluación de Ingeniería))
+        </div>
+
+        <h2>3. ¿Qué recibirás de nosotros? (Tipos de Propuestas) 📑</h2>
+        <p>Nuestro software analizará tu requerimiento y generará de forma automática un documento PDF inalterable. Dependiendo de la envergadura de tu requerimiento, te presentaremos uno de los siguientes dos formatos:</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Característica</th>
+                    <th>📄 Cotización Simple</th>
+                    <th>📑 Propuesta Técnico-Económica (Extendida)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Volumen</strong></td>
+                    <td>1 a 2 Hojas</td>
+                    <td>Múltiples páginas tipo Dossier</td>
+                </tr>
+                <tr>
+                    <td><strong>Uso Ideal</strong></td>
+                    <td>Suministros, consultorías rápidas, servicios puntuales.</td>
+                    <td>Proyectos de ingeniería complejos, expedientes técnicos.</td>
+                </tr>
+                <tr>
+                    <td><strong>Contenido</strong></td>
+                    <td>Precio, Plazo, Forma de Pago, Condiciones.</td>
+                    <td>+ Objetivos, Alcances detallados, Metodología paso a paso, Software a utilizar y Equipo clave.</td>
+                </tr>
+                <tr>
+                    <td><strong>Tiempo de Emisión</strong></td>
+                    <td>Inmediato</td>
+                    <td>24 - 48 horas</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="alert-important">
+            <strong>Importante: El Código CUI (Tu identificador único)</strong><br>
+            Toda propuesta generada por J3K tiene un <strong>CUI</strong> (Ej: COTIZACIÓN J3K: N° 05-2026-Rev01). El portal archiva todo tu historial bajo este número. Por favor, <strong>utiliza siempre este código en el Asunto de tus correos</strong> o en tu Orden de Compra para mantener la trazabilidad.
+        </div>
+
+        <h2>4. Aprobación y Ejecución (Nuestra Garantía de Calidad) 🚀</h2>
+        <p>Una vez que evalúes nuestro PDF y decidas aprobarlo mediante un correo o emitiendo tu Orden de Compra (OC), sucede la verdadera magia de nuestro sistema interno.</p>
+        <h3>El Flujo de Trabajo (Backend J3K)</h3>
+        <p>Para garantizarte que no improvisamos, la aprobación de tu cotización desencadena automáticamente un <strong>Expediente de Venta (Checklist Estricto)</strong> en nuestro servidor. Nuestros ingenieros no pueden avanzar ni emitirte una factura si no cumplen las siguientes fases sistémicas:</p>
+        <div class="mermaid">
+flowchart TD
+    subgraph Fase 1: Enlace
+    A[Aprobación del Cliente] -->|El CUI se vincula al sistema| B(Apertura de Expediente)
+    end
+    
+    subgraph Fase 2: Ejecución Técnica
+    B --> C[Ejecución del Servicio]
+    C -->|El ingeniero debe subir| C1(Fotos, Avances y Reportes)
+    end
+    
+    subgraph Fase 3: Cierre Transparente
+    C1 --> D[Entrega y Conformidad]
+    D -->|Firma Digital / Correo| E[Cobranza Final]
+    end
+        </div>
+
+        <div class="alert-note">
+            <strong>Tip: Cero Pérdida de Información</strong><br>
+            Gracias a este modelo de <em>Expedientes Digitales</em>, cualquier miembro de nuestro equipo gerencial puede auditar tu proyecto en tiempo real, garantizando que todo lo que te prometimos en la Propuesta (Paso 2) se esté cumpliendo al pie de la letra en la Ejecución (Paso 4).
+        </div>
+
+        <h2>5. Resumen de Beneficios para Ti 🤝</h2>
+        <p>Trabajar con la infraestructura digital de J3K se traduce en beneficios directos para tu empresa:</p>
+        <ul>
+            <li>⏱️ <strong>Rapidez:</strong> Propuestas estandarizadas y cotizaciones sin demoras manuales.</li>
+            <li>🔍 <strong>Trazabilidad:</strong> Tu CUI asegura que nada se pierda en cadenas de correos.</li>
+            <li>🛡️ <strong>Garantía:</strong> El checklist obligatorio de nuestro portal fuerza a nuestro equipo técnico a entregar los reportes y actas formales antes de proceder a la facturación.</li>
+        </ul>
+    </div>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Manual de Usuario: Cotizaciones J3K</title>
+    <style>
+        body { font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.6; color: #334155; max-width: 900px; margin: 0 auto; padding: 40px 20px; background-color: #f8fafc; }
+        .container { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        h1 { color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; font-size: 28px; }
+        h2 { color: #d97706; margin-top: 30px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; font-size: 22px; }
+        h3 { color: #0f172a; margin-top: 20px; font-size: 18px; }
+        p, li { margin-bottom: 14px; font-size: 16px; }
+        .step-box { background-color: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #d97706; padding: 15px; margin: 15px 0; border-radius: 4px; }
+        .step-num { font-weight: bold; color: #d97706; font-size: 18px; margin-bottom: 5px; display: block; }
+        .alert-important { background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 16px; margin: 20px 0; border-radius: 0 8px 8px 0; font-size: 15px; }
+        .alert-note { background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 16px; margin: 20px 0; border-radius: 0 8px 8px 0; font-size: 15px; }
+        @media print {
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; padding: 0; border: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📙 Manual Interno: Módulo de Cotizaciones</h1>
+        <p>Este manual está diseñado para enseñar a nuestro equipo comercial y de ingeniería cómo crear, registrar y exportar <strong>Cotizaciones y Propuestas Técnico-Económicas</strong> utilizando el Portal J3K.</p>
+
+        <h2>Ruta 1: Crear una Cotización desde Cero (En el Portal)</h2>
+        <p>Utiliza esta ruta cuando necesites armar la propuesta directamente usando las plantillas estandarizadas de J3K.</p>
+
+        <div class="step-box">
+            <span class="step-num">Paso 1: Iniciar una Cotización Nueva</span>
+            <p>1. Ve al módulo <strong>Cotizaciones</strong>.</p>
+            <p>2. Haz clic en el botón verde grande que dice <strong>"+ Cotización Nueva"</strong> en la parte superior izquierda.</p>
+            <p>3. El sistema te hará una pregunta clave: ¿Qué tipo de cotización deseas crear?</p>
+            <ul>
+                <li><strong>Cotización Simple (1 Hoja):</strong> Elígelo para cotizar cosas rápidas como materiales, horas hombre puntuales o suministros. Solo te pedirá los datos básicos.</li>
+                <li><strong>Propuesta Extendida (Múltiples Hojas):</strong> Elígelo para proyectos, consultorías o servicios completos. Te habilitará pestañas avanzadas como Objetivos, Metodología, Equipo Clave, etc.</li>
+            </ul>
+        </div>
+
+        <div class="step-box">
+            <span class="step-num">Paso 2: Llenar la Información</span>
+            <p>1. Llena siempre primero la pestaña de <strong>Empresa y Contacto</strong> (es obligatorio para que la cotización tenga nombre).</p>
+            <p>2. Navega por las diferentes pestañas de la izquierda (Ítems, Condiciones, Entregables, etc.).</p>
+            <p>3. Agrega tus precios en la pestaña <strong>Tabla de Precios</strong> (el IGV y el Total se calculan solos).</p>
+        </div>
+
+        <div class="step-box">
+            <span class="step-num">Paso 3: Exportar el PDF</span>
+            <p>1. Cuando termines, haz clic en el botón verde <strong>"Guardar e Imprimir PDF"</strong> que flota en la parte inferior derecha.</p>
+            <p>2. Se abrirá la vista oficial de J3K lista para imprimir. Presiona `Ctrl + P` (o clic derecho > Imprimir) y selecciona <em>Guardar como PDF</em>.</p>
+        </div>
+
+        <h2>Ruta 2: Registrar una Cotización Externa (Archivar un PDF)</h2>
+        <p>Utiliza esta ruta si ya hiciste la cotización fuera del portal (por ejemplo, en un Excel antiguo) y solo quieres que el sistema la archive para tener el registro y el Código CUI.</p>
+
+        <div class="step-box">
+            <span class="step-num">Paso 1: Subir el Archivo</span>
+            <p>1. En la pantalla principal, haz clic en el botón azul <strong>"📥 Cotización Externa"</strong>.</p>
+            <p>2. Sube el documento PDF de la cotización que ya le enviaste al cliente.</p>
+        </div>
+
+        <div class="step-box">
+            <span class="step-num">Paso 2: Usar la Inteligencia Artificial (¡El Truco!)</span>
+            <p>Para no tener que escribir a mano los datos del cliente, el ruc y el precio que están dentro de ese PDF:</p>
+            <p>1. Haz clic en el botón amarillo <strong>"✨ Autocompletar con IA"</strong>.</p>
+            <p>2. Espera unos segundos. La Inteligencia Artificial leerá tu PDF y llenará automáticamente todos los campos del formulario por ti.</p>
+            <p>3. Revisa que los datos estén correctos y dale a <strong>"Guardar Registro"</strong>.</p>
+        </div>
+
+        <div class="alert-important">
+            <strong>¿Por qué es vital usar este módulo?</strong><br>
+            Cada cotización que haces aquí genera un <strong>CUI (Código Único de Identificación)</strong>. Ese CUI es el que permite que luego el departamento de Ventas pueda abrir el expediente con un solo clic. ¡Si no haces la cotización aquí, Ventas no podrá trabajar!
+        </div>
+
+        <div class="alert-note">
+            <strong>¿Te equivocaste? Usa la Papelera</strong><br>
+            Si creaste una cotización por error, presiona la 'X' roja en la tabla principal. La cotización no se borrará para siempre, se irá a la <strong>Papelera de Reciclaje</strong> (el botón superior). Desde ahí puedes restaurarla si te arrepientes.
+        </div>
+    </div>
+</body>
+</html>
