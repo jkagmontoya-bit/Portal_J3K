@@ -799,10 +799,11 @@ function renderFlow(){
   document.getElementById("keyDocs").innerHTML = `<b>Documentos clave:</b><br>${esc(p.keyDocs||"Según pasos definidos en la matriz.")}`;
   const flow=document.getElementById("flowSteps"); flow.innerHTML="";
   p.steps.forEach((s,i)=>{
+    if(currentProcess === 'ventas' && i === 0) return;
     const done=isStepComplete(currentProcess,i);
     const div=document.createElement("div");
     div.className="flow-step "+(done?"done":"");
-    div.innerHTML=`<div class="flow-icon">${iconFor(i)}</div><div class="flow-text"><b>${i+1}. ${esc(s.name)}</b><span>${esc(s.description)}</span></div><div class="flow-check">${done?"✓":"○"}</div>`;
+    div.innerHTML=`<div class="flow-icon">${iconFor(i)}</div><div class="flow-text"><b>${currentProcess==="ventas" ? i : i+1}. ${esc(s.name)}</b><span>${esc(s.description)}</span></div><div class="flow-check">${done?"✓":"○"}</div>`;
     flow.appendChild(div);
   });
   renderAlerts();
@@ -821,12 +822,13 @@ function renderAlerts(){
 function renderWorkSteps(){
   const p=CONFIG.processes[currentProcess], box=document.getElementById("workSteps"); box.innerHTML="";
   p.steps.forEach((s,i)=>{
+    if(currentProcess === 'ventas' && i === 0) return;
     const st=state.processes[currentProcess].steps[i];
     const div=document.createElement("div");
     div.className="work-step "+(isStepComplete(currentProcess,i)?"done":(s.required?"warn":"optional"));
     div.innerHTML=`
       <div class="step-top">
-        <div class="num">${i+1}</div>
+        <div class="num">${currentProcess==="ventas" ? i : i+1}</div>
         <div class="step-info">
           <b>${esc(s.name)} ${s.required ? "" : '<span class="pill info">Opcional</span>'}</b>
           <span>${esc(s.description)}</span>
@@ -917,15 +919,16 @@ function renderDocs(){
   Object.keys(CONFIG.processes).forEach(k=>{
     const p=CONFIG.processes[k];
     p.steps.forEach((s,i)=>{
+    if(currentProcess === 'ventas' && i === 0) return;
       const st=state.processes[k].steps[i], files=st.files||[];
       if(files.length===0){
         const tr=document.createElement("tr");
-        tr.innerHTML=`<td>${p.icon} ${esc(p.label)}</td><td>${i+1}. ${esc(s.name)}</td><td>-</td><td>${stepStatus(k,i)}</td>`;
+        tr.innerHTML=`<td>${p.icon} ${esc(p.label)}</td><td>${currentProcess==="ventas" ? i : i+1}. ${esc(s.name)}</td><td>-</td><td>${stepStatus(k,i)}</td>`;
         body.appendChild(tr);
       } else {
         files.forEach(f=>{
           const tr=document.createElement("tr");
-          tr.innerHTML=`<td>${p.icon} ${esc(p.label)}</td><td>${i+1}. ${esc(s.name)}</td><td>${esc(f.name)}</td><td>${stepStatus(k,i)}</td>`;
+          tr.innerHTML=`<td>${p.icon} ${esc(p.label)}</td><td>${currentProcess==="ventas" ? i : i+1}. ${esc(s.name)}</td><td>${esc(f.name)}</td><td>${stepStatus(k,i)}</td>`;
           body.appendChild(tr);
         });
       }
