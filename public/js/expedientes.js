@@ -205,10 +205,15 @@ function render(){
       list.forEach(item => {
          const opt = document.createElement('option');
          opt.value = item.id;
-         let cui = item.general.expediente || 'S/C';
-         let ruc = item.general.docTercero || 'S/RUC';
-         let proy = item.general.proyecto || 'S/PROY';
-         let name = `${cui} - ${ruc} - ${proy}`;
+         let name = "";
+         if(currentProcess === 'ventas') {
+             let cui = item.general.cotizacionCUI || 'S/C';
+             let tercero = item.general.tercero || 'Sin Cliente';
+             let monto = item.general.monto ? `S/ ${money(item.general.monto)}` : 'S/ 0.00';
+             name = `${cui} | ${tercero} | ${monto}`;
+         } else {
+             name = item.general.expediente || item.general.tercero || 'Expediente sin nombre';
+         }
          if(item.pct === 100) name += ' (Completado)';
          opt.textContent = name;
          if(item.id === state.currentId[currentProcess]) opt.selected = true;
