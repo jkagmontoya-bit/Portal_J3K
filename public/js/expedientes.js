@@ -171,7 +171,10 @@ function render(){
       sel.innerHTML = '';
       saveCurrentToBuffer(); // Ensure current is in the list
       
-      const list = state.saved[currentProcess] || [];
+      let list = state.saved[currentProcess] || [];
+      if (currentProcess === 'ventas') {
+          list = list.filter(item => item.pct < 100 || item.id === state.currentId[currentProcess]);
+      }
       list.forEach(item => {
          const opt = document.createElement('option');
          opt.value = item.id;
@@ -203,15 +206,21 @@ function render(){
   // Ventas Option B Logic
   const expBlock = document.getElementById('expedienteBlock');
   const ventasHdr = document.getElementById('ventasHeaderStep0');
+  const ventasExtra = document.getElementById('ventasExtraFields');
+  const btnLink = document.getElementById('btnLinkCotizacion');
+  
+  const cotizacionVinculada = !!state.processes[currentProcess].general.docTercero;
+
   if(currentProcess === 'ventas') {
     if(expBlock) expBlock.style.display = 'none';
-    if(ventasHdr) {
-      ventasHdr.style.display = 'block';
-
-    }
+    if(btnLink) btnLink.style.display = 'inline-block';
+    if(ventasHdr) ventasHdr.style.display = cotizacionVinculada ? 'block' : 'none';
+    if(ventasExtra) ventasExtra.style.display = cotizacionVinculada ? 'flex' : 'none';
   } else {
     if(expBlock) expBlock.style.display = 'block';
     if(ventasHdr) ventasHdr.style.display = 'none';
+    if(ventasExtra) ventasExtra.style.display = 'none';
+    if(btnLink) btnLink.style.display = 'none';
   }
 
   fillGeneral();
@@ -305,7 +314,12 @@ function renderAlerts(){
   box.innerHTML = alerts.map(a=>`<div class="alert">${esc(a)}</div>`).join("");
 }
 function renderWorkSteps(){
-  const p=CONFIG.processes[currentProcess], box=document.getElementById("workSteps"); box.innerHTML="";
+  const box=document.getElementById("workSteps"); box.innerHTML="";
+  if(currentProcess === 'ventas' && !state.processes[currentProcess].general.docTercero) {
+    box.innerHTML = '<div style="padding:20px; text-align:center; color:#64748b; background:#f1f5f9; border-radius:8px; border:2px dashed #cbd5e1;">⚠️ Debes <b>Vincular Cotización</b> antes de poder subir archivos o ver los pasos.</div>';
+    return;
+  }
+  const p=CONFIG.processes[currentProcess];
   p.steps.forEach((s,i)=>{
     if(currentProcess === 'ventas' && i === 0) return;
     const st=state.processes[currentProcess].steps[i];
@@ -329,10 +343,11 @@ function renderWorkSteps(){
         </div>
         <div>
           <label>Archivos</label>
-          <input type="file" multiple onchange="addFiles(${i}, this.files); this.value='';" aria-label="Cargar archivo de sustento">
+          <input type="file" ${currentProcess === 'ventas' && (i === 0 || (i === 3 && !state.processes[currentProcess].general.tieneDetraccionVenta)) ? '' : 'multiple'} onchange="addFiles(${i}, this.files); this.value='';" aria-label="Cargar archivo de sustento">
           <div class="mini">PDF, imagen, Excel, Word, XML, CDR, etc.</div>
         </div>
       </div>
+      ${(currentProcess === 'ventas' && i === 3 && state.processes[currentProcess].general.tieneDetraccionVenta) ? '<div style="background:#fef3c7; border:1px solid #f59e0b; border-radius:6px; padding:10px; margin:8px 0; color:#92400e; font-size:13px;"><b>⚠️ Recordatorio:</b> Esta operación tiene detracción. Debe subir el <b>Voucher de Pago</b> y la <b>Constancia de Detracción</b> (2 archivos).</div>' : ''}
       <div class="step-bottom">
         <div style="flex:1;">
           <label>Observaciones / referencias</label>
@@ -406,6 +421,21 @@ function removeObs(i, oIdx){
   if(Array.isArray(st.obs)) { st.obs.splice(oIdx, 1); save(); render(); }
 }
 function addFiles(i, files){
+  if(currentProcess === 'ventas') {
+    const currentFiles = state.processes[currentProcess].steps[i].files || [];
+    if(i === 0 && currentFiles.length >= 1) {
+      alert('La factura de venta solo acepta 1 archivo. Elimina el actual para subir otro.');
+      return;
+    }
+    if(i === 3) {
+      const tieneDetraccion = state.processes[currentProcess].general.tieneDetraccionVenta;
+      const maxFiles = tieneDetraccion ? 2 : 1;
+      if(currentFiles.length >= maxFiles) {
+        alert(tieneDetraccion ? 'La cobranza acepta máximo 2 archivos: Voucher de Pago y Detracción.' : 'La cobranza acepta máximo 1 archivo: Voucher de Pago.');
+        return;
+      }
+    }
+  }
   Array.from(files||[]).forEach(file=>{
     const reader=new FileReader();
     reader.onload=e=>{
