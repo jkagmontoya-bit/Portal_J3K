@@ -1136,10 +1136,11 @@ async function selectCotizacion(idx) {
   // Actualizar la cotización en la DB para restar el saldo
   try {
     const db = await localforage.getItem('cotizaciones_db');
-    const dbQuote = db.quotes.find(x => x.cui === q.cui);
+    const dbArray = Array.isArray(db) ? db : (db && db.quotes ? db.quotes : []);
+    const dbQuote = dbArray.find(x => x.cui === q.cui);
     if(dbQuote) {
       dbQuote.montoFacturado = (Number(dbQuote.montoFacturado) || 0) + montoFactura;
-      await localforage.setItem('cotizaciones_db', db);
+      await localforage.setItem('cotizaciones_db', dbArray);
       alert(`Cotización ${q.cui} vinculada con éxito.\nEl repositorio ha actualizado el saldo pendiente.`);
     }
   } catch(e) {
