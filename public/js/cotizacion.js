@@ -1,5 +1,28 @@
   let DB = [];
   let currentDoc = null;
+  
+  window.buscarRucCotizacion = async function() {
+    const rucInput = document.getElementById('ruc').value.trim();
+    if (!rucInput) return alert("Ingrese un RUC para buscar.");
+    
+    if (window.J3K_UI) window.J3K_UI.showLoading("Consultando SUNAT/RENIEC...");
+    try {
+      const resp = await window.J3K_API.sunat.consultarDocumento(rucInput.length === 8 ? 'dni' : 'ruc', rucInput);
+      if (resp.success) {
+        document.getElementById('empresa').value = resp.data.razon_social || resp.data.nombre_completo || '';
+        document.getElementById('ubicacion').value = resp.data.direccion || resp.data.ubigeo || '';
+        if (window.J3K_UI) window.J3K_UI.showToast("Datos recuperados exitosamente");
+      } else {
+        alert("No se encontró el documento o hubo un error: " + resp.message);
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error de conexión al consultar documento.");
+    } finally {
+      if (window.J3K_UI) window.J3K_UI.hideLoading();
+    }
+  };
+
   let itemCount = 0;
   
   // Quill Editors
@@ -579,6 +602,19 @@ function renderDashboard() {
     const aplicaIGV = document.getElementById('aplicaIGV').value === 'si';
     const igv = aplicaIGV ? subtotal * 0.18 : 0;
 
+    // Subir a Firebase Storage si es un archivo nuevo en base64
+    if (currentSustento && currentSustento.dataUrl && currentSustento.dataUrl.startsWith('data:')) {
+      if (window.uploadToFirebaseStorage) {
+        try {
+          const path = 'cotizaciones_sustentos/' + currentDoc.id + '_' + currentSustento.name;
+          const url = await window.uploadToFirebaseStorage(path, currentSustento.dataUrl);
+          currentSustento.dataUrl = url; // Reemplazar Base64 por URL
+        } catch (e) {
+          console.error("Error subiendo sustento a Storage:", e);
+        }
+      }
+    }
+
     const data = {
       id: currentDoc.id, cui: cuiFinal, total: subtotal + igv, sustento: currentSustento,
       fecha: document.getElementById('fecha').value,
@@ -622,12 +658,15 @@ function renderDashboard() {
     showDashboard();
   }
 
-  function guardarYGenerarPDF() {
-    ejecutarImpresion();
+  window.guardarYGenerarPDF = function() {
     guardarCotizacion().then(() => {
       abrirEdicion(currentDoc.id);
+      setTimeout(() => {
+        ejecutarImpresion();
+      }, 100);
     }).catch(err => {
       console.error("Error guardando:", err);
+      alert("Ocurrió un error al guardar: " + err.message);
     });
   }
 
@@ -720,12 +759,16 @@ function renderDashboard() {
     try {
       const cot = DB.find(c => c.id === id);
       if(cot && cot.sustento && cot.sustento.dataUrl) {
-        const a = document.createElement('a'); 
-        a.href = cot.sustento.dataUrl; 
-        a.download = cot.sustento.name || 'Sustento.pdf'; 
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        if (cot.sustento.dataUrl.startsWith('http')) {
+          window.open(cot.sustento.dataUrl, '_blank');
+        } else {
+          const a = document.createElement('a'); 
+          a.href = cot.sustento.dataUrl; 
+          a.download = cot.sustento.name || 'Sustento.pdf'; 
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }
       } else {
         alert("No hay archivo adjunto.");
       }

@@ -1,0 +1,3 @@
+# Bitácoras
+
+Generan CUI-BITACORAS.

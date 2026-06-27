@@ -36,12 +36,35 @@ window.waitForAuth = function() {
 // Universal function to sync DB updates
 window.saveToFirebase = async function(path, data) {
   try {
-    // Ensure user is authenticated before writing
     if (window.waitForAuth) await window.waitForAuth();
     await db.ref(path).set(data);
   } catch (error) {
     console.error("Firebase save error:", error);
     alert("Error al guardar en la nube: " + error.message);
+  }
+};
+
+window.uploadToFirebaseStorage = async function(path, base64Data) {
+  try {
+    if (window.waitForAuth) await window.waitForAuth();
+    const storageRef = firebase.storage().ref(path);
+    const snapshot = await storageRef.putString(base64Data, 'data_url');
+    const downloadURL = await snapshot.ref.getDownloadURL();
+    return downloadURL;
+  } catch (error) {
+    console.error("Firebase upload error:", error);
+    alert("Error al subir archivo: " + error.message);
+    throw error;
+  }
+};
+
+window.deleteFromFirebaseStorage = async function(url) {
+  try {
+    if (window.waitForAuth) await window.waitForAuth();
+    const storageRef = firebase.storage().refFromURL(url);
+    await storageRef.delete();
+  } catch (error) {
+    console.error("Firebase delete error:", error);
   }
 };
 
