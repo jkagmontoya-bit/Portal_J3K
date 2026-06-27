@@ -185,7 +185,7 @@ const MOTIVATIONAL_QUOTES = [
 
 function WelcomeModal({ isOpen, onClose, userName }) {
   const { userData } = useAuth();
-  const quote = React.useMemo(() => MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)], [isOpen]);
+  const quote = React.useMemo(() => MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)], []);
   
   if (!isOpen) return null;
 
@@ -208,7 +208,7 @@ function WelcomeModal({ isOpen, onClose, userName }) {
         <h3 style={{ color: '#52525b', fontWeight: 500, fontSize: '16px' }}>{displayAlias}</h3>
         
         <div className="welcome-quote">
-          "{quote}"
+          &quot;{quote}&quot;
         </div>
         
         <button onClick={onClose} className="btn btn-primary">
@@ -224,7 +224,7 @@ function decodeUtf8(str) {
   if (!str) return '';
   try {
     return decodeURIComponent(escape(str));
-  } catch(e) {
+  } catch {
     return str;
   }
 }
@@ -297,7 +297,8 @@ function App() {
   const [showProfile, setShowProfile] = useState(false);
   const [showDrawer, setShowDrawer] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
-  const [showAdmin, setShowAdmin] = useState(false);
+  const [, setShowAdmin] = useState(false);
+
   const [viewerUrl, setViewerUrl] = useState('');
   const [modules, setModules] = useState([]);
   const [manifestError, setManifestError] = useState('');

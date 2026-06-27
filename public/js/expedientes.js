@@ -137,7 +137,7 @@ function saveCurrentToBuffer() {
   const g = state.processes[currentProcess].general;
   // Solo guardar en el historial si al menos tiene un identificador o algún dato
   if(g.expediente || g.tercero) {
-      let idx = state.saved.hasOwnProperty(currentProcess) ? state.saved[currentProcess].findIndex(x => x.id === state.currentId[currentProcess]) : -1;
+      let idx = Object.prototype.hasOwnProperty.call(state.saved, currentProcess) ? state.saved[currentProcess].findIndex(x => x.id === state.currentId[currentProcess]) : -1;
       const clone = JSON.parse(JSON.stringify(state.processes[currentProcess]));
       clone.id = state.currentId[currentProcess];
       clone.pct = processPct(currentProcess).pct;
@@ -515,7 +515,6 @@ Si no encuentras algún dato, usa "". Devuelve SOLO el JSON, sin bloques de cód
       } else {
          document.getElementById("monto").value = aiMonto.toFixed(2);
       }
-    }
     saveCurrent();
   } catch (e) {
     console.error("Error al procesar con IA:", e);

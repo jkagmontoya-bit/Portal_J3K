@@ -1,9 +1,3 @@
-[tag] || tag));
-  }
-
-  [tag] || tag));
-  }
-
   let DB = [];
   let currentDoc = null;
   let itemCount = 0;
@@ -268,7 +262,7 @@ function renderDashboard() {
 
     const expedientesStateRaw = localStorage.getItem("j3k_modulo_expedientes_final_v1");
     let expedientesState = null;
-    try { if (expedientesStateRaw) expedientesState = JSON.parse(expedientesStateRaw); } catch(e){}
+    try { if (expedientesStateRaw) expedientesState = JSON.parse(expedientesStateRaw); } catch(e){ /* ignore */ }
     const facturasVentas = expedientesState?.saved?.ventas || [];
 
     let lastMonthYear = "";
@@ -736,8 +730,6 @@ function renderDashboard() {
   };
 
   // --- TABLAS DINAMICAS LOGIC ---
-  ); }
-  
 
   function agregarFila(desc = "", cant = 0, und = "glb", precio = 0, isSub = false) {
     itemCount++;
