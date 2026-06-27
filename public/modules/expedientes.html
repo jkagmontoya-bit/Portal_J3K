@@ -533,9 +533,7 @@ aside .upload-box, aside .notice, aside .custom-row span {
             <div class="form-grid">
               <div id="expedienteBlock"><label>N.° factura</label><input id="expediente" placeholder="Ej.: COMP-2026-001" oninput="saveCurrent()"></div>
               <div id="ventasHeaderStep0" style="display:none; grid-column: span 2; background: #fffbeb; padding: 15px; border-radius: 6px; border: 1px solid #fcd34d;">
-                <label style="font-weight:bold; color:#b45309; display:block; margin-bottom:5px;">Cotización Vinculada (Autocompleta datos)</label>
-                <select id="cotizacionHeaderSelect" style="width:100%; border:1px solid #cbd5e1; border-radius:4px; padding:6px; margin-bottom: 15px;" onchange="confirmCotizacion(0, this)"></select>
-                
+
                 <label style="font-weight:bold; color:#b45309; display:block; margin-bottom:5px;">Factura de Venta (Archivos)</label>
                 <input type="file" multiple onchange="addFiles(0, this.files); this.value='';" aria-label="Cargar archivo de sustento">
                 <div class="file-list" id="files-0" style="margin-top:10px;"></div>
@@ -716,13 +714,7 @@ function render(){
     if(expBlock) expBlock.style.display = 'none';
     if(ventasHdr) {
       ventasHdr.style.display = 'block';
-      let opts = '<option value="">-- Seleccionar Cotización --</option>';
-      const st0 = state.processes.ventas.steps[0] || {};
-      (window.cotizaciones_db || []).filter(c => !c.deletedAt).forEach(c => {
-         const label = c.cui + ' - ' + (c.proyecto ? c.proyecto.substring(0,30) : '') + ' - S/ ' + money(c.total);
-         opts += `<option value="${c.cui}" ${st0.obs === c.cui ? 'selected' : ''}>${label}</option>`;
-      });
-      document.getElementById('cotizacionHeaderSelect').innerHTML = opts;
+
     }
   } else {
     if(expBlock) expBlock.style.display = 'block';
