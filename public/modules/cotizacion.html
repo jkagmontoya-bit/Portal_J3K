@@ -222,6 +222,7 @@
           <th width="40%">NOMBRE (RUC - PROYECTO)</th>
           <th width="15%">FECHA</th>
           <th width="10%">TOTAL S/.</th>
+          <th width="15%">FACTURAS ASOC.</th>
           <th width="20%">ACCIONES</th>
         </tr>
       </thead>
@@ -904,9 +905,15 @@ function renderDashboard() {
     const tbody = document.getElementById('dbTbody');
     tbody.innerHTML = '';
     if(DB.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay propuestas guardadas.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No hay propuestas guardadas.</td></tr>';
       return;
     }
+
+    const expedientesStateRaw = localStorage.getItem("j3k_modulo_expedientes_final_v1");
+    let expedientesState = null;
+    try { if (expedientesStateRaw) expedientesState = JSON.parse(expedientesStateRaw); } catch(e){}
+    const facturasVentas = expedientesState?.saved?.ventas || [];
+
     DB.slice().reverse().filter(c => !c.deletedAt).forEach(cot => {
       const tr = document.createElement('tr');
       const facturado = parseFloat(cot.montoFacturado) || 0;
@@ -932,7 +939,22 @@ function renderDashboard() {
       const printBtn = cot.isExternal ? '' : `<button class="alt" style="background:#0f172a; color:white; border-color:#0f172a;" onclick="imprimirDesdeDashboard('${cot.id}')">🖨️ Imprimir</button>`;
       const tooltip = cot.isExternal ? 'Descargar PDF subido' : 'Descargar Sustento (TDR/Correo)';
       const sustentoBtnHtml = cot.sustento ? `<button class="alt" onclick="descargarSustento('${cot.id}')" title="${tooltip}">📎 ${cot.isExternal ? 'PDF' : 'Sustento'}</button>` : '';
-      
+      let facturasAsociadas = facturasVentas.filter(f => f.general?.proyecto === cot.cui || f.cui === cot.cui);
+      let facturasHtml = '';
+      if (facturasAsociadas.length > 0) {
+        let totalFacturas = 0;
+        facturasHtml += `<ul style="margin:0; padding-left:15px; font-size:11px; text-align:left;">`;
+        facturasAsociadas.forEach(f => {
+           let doc = f.general?.docTercero || f.cui || 'Factura';
+           let monto = parseFloat(f.general?.monto) || 0;
+           totalFacturas += monto;
+           facturasHtml += `<li><b>${doc}</b>: S/ ${formatMoney(monto)}</li>`;
+        });
+        facturasHtml += `</ul><div style="font-size:11px; margin-top:3px; color:#475569; text-align:left;"><b>Total Fac: S/ ${formatMoney(totalFacturas)}</b></div>`;
+      } else {
+        facturasHtml = '<span style="color:#94a3b8; font-size:12px;">Sin facturas</span>';
+      }
+
       tr.innerHTML = `
         <td>
           <span class="cui-badge">${cot.cui}</span>
@@ -941,6 +963,7 @@ function renderDashboard() {
         <td style="font-weight:bold;">${externaTag}${tipoTag}${nombre}</td>
         <td>${cot.fecha}</td>
         <td>S/ ${formatMoney(cot.total)}</td>
+        <td>${facturasHtml}</td>
         <td>
           ${aprobarBtn}
           ${editBtn}

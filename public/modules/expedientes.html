@@ -537,6 +537,7 @@ aside .upload-box, aside .notice, aside .custom-row span {
             <div id="alerts"></div>
             <div class="form-grid">
               <div id="expedienteBlock"><label>N.° factura</label><input id="expediente" placeholder="Ej.: COMP-2026-001" oninput="saveCurrent()"></div>
+              <input type="hidden" id="cotizacionCUI">
               <div id="ventasHeaderStep0" style="display:none; grid-column: span 2; background: #fffbeb; padding: 15px; border-radius: 6px; border: 1px solid #fcd34d;">
 
                 <label style="font-weight:bold; color:#b45309; display:block; margin-bottom:5px;">Factura de Venta (Archivos)</label>
@@ -678,7 +679,13 @@ function saveHeader(){
 }
 function saveCurrent(){
   const g = state.processes[currentProcess].general;
-  ["expediente","responsable","tercero","docTercero","monto","proyecto","descripcion"].forEach(id => g[id] = val(id));
+  ["expediente","responsable","tercero","docTercero","monto","proyecto","descripcion","numeroFacturaVenta","cotizacionCUI"].forEach(id => {
+    let el = document.getElementById(id);
+    if(el) g[id] = el.value;
+  });
+  let detraccionEl = document.getElementById("tieneDetraccionVenta");
+  if(detraccionEl) g.tieneDetraccionVenta = detraccionEl.checked;
+
   state.header.anio = val("anio");
   state.header.mes = val("mes");
   save();
@@ -688,9 +695,12 @@ function fillGeneral(){
   document.getElementById("anio").value = state.header.anio || "2026";
   document.getElementById("mes").value = state.header.mes || "Junio";
   const g = state.processes[currentProcess].general;
-  ["expediente","responsable","tercero","docTercero","monto","proyecto","descripcion"].forEach(id => {
+  ["expediente","responsable","tercero","docTercero","monto","proyecto","descripcion","numeroFacturaVenta","cotizacionCUI"].forEach(id => {
     const el = document.getElementById(id); if(el) el.value = g[id] || "";
   });
+  const detraccionEl = document.getElementById("tieneDetraccionVenta");
+  if(detraccionEl) detraccionEl.checked = !!g.tieneDetraccionVenta;
+
   const btnLink = document.getElementById("btnLinkCotizacion");
   if(btnLink) {
     btnLink.style.display = (currentProcess === 'ventas') ? 'inline-block' : 'none';
@@ -1307,6 +1317,8 @@ async function selectCotizacion(idx) {
   document.getElementById("docTercero").value = q.ruc || "";
   document.getElementById("proyecto").value = (q.proyecto || "") + " (Ref: " + q.cui + ")";
   document.getElementById("monto").value = montoFactura.toFixed(2);
+  let hiddenCUI = document.getElementById("cotizacionCUI");
+  if(hiddenCUI) hiddenCUI.value = q.cui;
   
   if(!document.getElementById("descripcion").value) {
     document.getElementById("descripcion").value = "Facturación según propuesta aprobada " + q.cui;
