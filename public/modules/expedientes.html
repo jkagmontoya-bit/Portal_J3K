@@ -535,6 +535,18 @@ aside .upload-box, aside .notice, aside .custom-row span {
               <div id="ventasHeaderStep0" style="display:none; grid-column: span 2; background: #fffbeb; padding: 15px; border-radius: 6px; border: 1px solid #fcd34d;">
 
                 <label style="font-weight:bold; color:#b45309; display:block; margin-bottom:5px;">Factura de Venta (Archivos)</label>
+                <div style="display:flex; gap:10px; margin-bottom:10px;">
+                  <div style="flex:1;">
+                    <label style="font-size:12px;">Número de Factura (xxxx-00000000):</label>
+                    <input type="text" id="numeroFacturaVenta" placeholder="F001-00000001" oninput="saveCurrent()" style="width:100%; padding:4px;">
+                  </div>
+                  <div style="flex:1; display:flex; align-items:flex-end;">
+                    <label style="display:flex; align-items:center; gap:5px; font-size:12px; cursor:pointer;">
+                      <input type="checkbox" id="tieneDetraccionVenta" onchange="saveCurrent()">
+                      ¿Tiene detracción?
+                    </label>
+                  </div>
+                </div>
                 <input type="file" multiple onchange="addFiles(0, this.files); this.value='';" aria-label="Cargar archivo de sustento">
                 <div class="file-list" id="files-0" style="margin-top:10px;"></div>
               </div>
@@ -613,6 +625,8 @@ function loadState(){
     const s = JSON.parse(raw);
     if(!s.header) s.header = {anio:"2026", mes:"Junio"};
     if(!s.processes) s.processes = {};
+    if(!s.saved) s.saved = { ventas: [], compras: [], rh: [] };
+    if(!s.currentId) s.currentId = { ventas: Date.now().toString(), compras: Date.now().toString(), rh: Date.now().toString() };
     for (const k of Object.keys(CONFIG.processes)){
       if(!s.processes[k]) s.processes[k] = {general:{}, steps:[]};
       if(!s.processes[k].general) s.processes[k].general = {};
@@ -694,19 +708,95 @@ function isStepComplete(k,i){
   const step = CONFIG.processes[k].steps[i], st = state.processes[k].steps[i];
   if(!step.required) return true;
   if(st.na) return true;
-  return !!st.ok && st.files && st.files.length > 0;
+  let reqFiles = 1;
+  if (k === 'ventas' && step.name === 'Cobranza' && state.processes[k].general.tieneDetraccionVenta) {
+     reqFiles = 2;
+  }
+  return !!st.ok && st.files && st.files.length >= reqFiles;
 }
 function stepStatus(k,i){
   const step = CONFIG.processes[k].steps[i], st = state.processes[k].steps[i];
   if(!step.required) return '<span class="pill info">Opcional</span>';
   if(st.na) return '<span class="pill ok">No aplica</span>';
+  
+  let reqFiles = 1;
+  if (k === 'ventas' && step.name === 'Cobranza' && state.processes[k].general.tieneDetraccionVenta) {
+     reqFiles = 2;
+  }
+  
   if(isStepComplete(k,i)) return '<span class="pill ok">Completo</span>';
-  if(st.ok && (!st.files || !st.files.length)) return '<span class="pill warn">Falta archivo</span>';
-  if(!st.ok && st.files && st.files.length) return '<span class="pill warn">Falta conformidad</span>';
+  if(st.ok && (!st.files || st.files.length < reqFiles)) {
+     if (reqFiles === 2 && st.files && st.files.length === 1) return '<span class="pill warn" title="Falta constancia de detracción">Falta detracción</span>';
+     return '<span class="pill warn">Falta archivo</span>';
+  }
+  if(!st.ok && st.files && st.files.length >= reqFiles) return '<span class="pill warn">Falta conformidad</span>';
   return '<span class="pill bad">Pendiente</span>';
 }
 
+function saveCurrentToBuffer() {
+  const g = state.processes[currentProcess].general;
+  // Solo guardar en el historial si al menos tiene un identificador o algún dato
+  if(g.expediente || g.tercero) {
+      let idx = state.saved.hasOwnProperty(currentProcess) ? state.saved[currentProcess].findIndex(x => x.id === state.currentId[currentProcess]) : -1;
+      const clone = JSON.parse(JSON.stringify(state.processes[currentProcess]));
+      clone.id = state.currentId[currentProcess];
+      clone.pct = processPct(currentProcess).pct;
+      
+      if(!state.saved[currentProcess]) state.saved[currentProcess] = [];
+      if(idx >= 0) state.saved[currentProcess][idx] = clone;
+      else state.saved[currentProcess].push(clone);
+  }
+}
+
+function switchExpediente(id) {
+  saveCurrentToBuffer();
+  let target = state.saved[currentProcess].find(x => x.id === id);
+  if(target) {
+     state.processes[currentProcess] = JSON.parse(JSON.stringify(target));
+     state.currentId[currentProcess] = id;
+     save(); render();
+  }
+}
+
+function newExpediente() {
+  saveCurrentToBuffer();
+  state.currentId[currentProcess] = Date.now().toString();
+  clearCurrent(); // This will clear and re-render
+}
+
 function render(){
+  if(state.currentId) {
+      document.getElementById('multi-expediente-ui').style.display = 'flex';
+      const sel = document.getElementById('expedienteSelector');
+      sel.innerHTML = '';
+      saveCurrentToBuffer(); // Ensure current is in the list
+      
+      const list = state.saved[currentProcess] || [];
+      list.forEach(item => {
+         const opt = document.createElement('option');
+         opt.value = item.id;
+         let name = item.general.expediente || item.general.tercero || 'Expediente sin nombre';
+         if(item.pct === 100) name += ' (Completado)';
+         opt.textContent = name;
+         if(item.id === state.currentId[currentProcess]) opt.selected = true;
+         sel.appendChild(opt);
+      });
+  }
+
+  // Auto-cierre a 100%
+  const currentPct = processPct(currentProcess).pct;
+  if(currentPct === 100) {
+      const g = state.processes[currentProcess].general;
+      if(!g.yaAvisado100) {
+          g.yaAvisado100 = true; // prevent infinite loop
+          save();
+          setTimeout(() => {
+              alert("✅ ¡Proceso completado al 100%! Se procederá a archivar y permitir el ingreso de una nueva factura.");
+              newExpediente();
+          }, 500);
+      }
+  }
+
   // Ventas Option B Logic
   const expBlock = document.getElementById('expedienteBlock');
   const ventasHdr = document.getElementById('ventasHeaderStep0');

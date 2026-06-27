@@ -806,6 +806,19 @@
      tbody.innerHTML = '';
      DB.slice().reverse().filter(c => c.deletedAt).forEach(cot => {
         const tr = document.createElement('tr');
+      const facturado = parseFloat(cot.montoFacturado) || 0;
+      const total = parseFloat(cot.total) || 0;
+      if (facturado > 0) {
+         if (Math.abs(facturado - total) < 0.1) {
+            tr.style.boxShadow = "0 0 15px 2px rgba(74, 222, 128, 0.6)";
+            tr.style.outline = "2px solid #4ade80";
+            tr.style.backgroundColor = "rgba(74, 222, 128, 0.1)";
+         } else {
+            tr.style.boxShadow = "0 0 15px 2px rgba(250, 204, 21, 0.6)";
+            tr.style.outline = "2px solid #facc15";
+            tr.style.backgroundColor = "rgba(250, 204, 21, 0.1)";
+         }
+      }
         const nombre = `${cot.empresa || cot.ruc || 'SIN NOMBRE'} - ${cot.proyecto ? cot.proyecto.substring(0,30) : ''}...`;
         const fechaDel = new Date(cot.deletedAt).toLocaleDateString();
         tr.innerHTML = `
@@ -896,6 +909,19 @@ function renderDashboard() {
     }
     DB.slice().reverse().filter(c => !c.deletedAt).forEach(cot => {
       const tr = document.createElement('tr');
+      const facturado = parseFloat(cot.montoFacturado) || 0;
+      const total = parseFloat(cot.total) || 0;
+      if (facturado > 0) {
+         if (Math.abs(facturado - total) < 0.1) {
+            tr.style.boxShadow = "0 0 15px 2px rgba(74, 222, 128, 0.6)";
+            tr.style.outline = "2px solid #4ade80";
+            tr.style.backgroundColor = "rgba(74, 222, 128, 0.1)";
+         } else {
+            tr.style.boxShadow = "0 0 15px 2px rgba(250, 204, 21, 0.6)";
+            tr.style.outline = "2px solid #facc15";
+            tr.style.backgroundColor = "rgba(250, 204, 21, 0.1)";
+         }
+      }
       const nombre = `${cot.empresa || cot.ruc || 'SIN NOMBRE'} - ${cot.proyecto ? cot.proyecto.substring(0,30) : ''}...`;
       const sustentoBtn = cot.sustento ? `<button class="alt" onclick="descargarSustento('${cot.id}')">📎 PDF</button>` : '';
       const externaTag = cot.isExternal ? `<span class="badge" style="background:#fef08a; color:#854d0e; margin-right:5px;">[EXTERNA]</span>` : '';
