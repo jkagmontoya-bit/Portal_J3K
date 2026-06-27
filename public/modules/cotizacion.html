@@ -777,6 +777,17 @@
            cerrarAuth();
            renderDashboard();
         }
+     } else if(currentAuthAction === 'toggle-aprobacion') {
+         const cot = DB.find(c => c.id === currentAuthId);
+         if(cot) {
+            const newState = (cot.estado === 'APROBADA') ? '' : 'APROBADA';
+            cot.estado = newState;
+            cot.historial = cot.historial || [];
+            cot.historial.push({ user: document.getElementById('auth-user').value.trim(), action: newState ? 'Cotización Aprobada' : 'Aprobación Removida', date: new Date().toLocaleString() });
+            await localforage.setItem('cotizaciones_db', DB);
+            cerrarAuth();
+            renderDashboard();
+         }
      } else if(currentAuthAction === 'hard-delete') {
         DB = DB.filter(c => c.id !== currentAuthId);
         await localforage.setItem('cotizaciones_db', DB);
@@ -865,12 +876,15 @@
   };
 
   window.toggleAprobar = async function(id) {
-  const c = DB.find(x => x.id === id);
-  if(c) {
-    c.estado = (c.estado === 'APROBADA') ? '' : 'APROBADA';
-    await localforage.setItem('cotizaciones_db', DB);
-    renderDashboard();
-  }
+   if(!localStorage.getItem('J3K_MASTER_PIN')) {
+      alert("Primero debes configurar el PIN Maestro de Seguridad en el botón 🔐 Seguridad.");
+      return;
+   }
+   currentAuthAction = 'toggle-aprobacion';
+   currentAuthId = id;
+   document.getElementById('auth-user').value = localStorage.getItem('J3K_USER_NAME') || '';
+   document.getElementById('auth-pin').value = '';
+   document.getElementById('modal-auth').style.display = 'flex';
 };
 
 function renderDashboard() {
