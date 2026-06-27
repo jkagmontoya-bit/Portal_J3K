@@ -754,9 +754,7 @@ function renderSide(){
     btn.onclick = () => setProcess(k);
     box.appendChild(btn);
   });
-  if(currentProcess === 'ventas') {
-    renderFiles(0);
-  }
+
 }
 function renderProcessTabs(){
   const box = document.getElementById("processTabs");
@@ -769,9 +767,7 @@ function renderProcessTabs(){
     div.innerHTML=`<div class="tab-title">${p.icon} ${esc(p.label)}</div><div class="tab-desc">${p.steps.length} pasos activos · ${pct}% completo</div>`;
     box.appendChild(div);
   });
-  if(currentProcess === 'ventas') {
-    renderFiles(0);
-  }
+
 }
 function renderMetrics(){
   const g=globalPct();
@@ -792,9 +788,7 @@ function renderSummary(){
     tr.innerHTML=`<td>${p.icon} ${esc(p.label)}</td><td>${pr.active}</td><td>${pr.required}</td><td>${pr.done}</td><td><b>${pr.pct}%</b></td><td><button type="button" class="alt" onclick="setProcess('${k}')">Abrir</button></td>`;
     body.appendChild(tr);
   });
-  if(currentProcess === 'ventas') {
-    renderFiles(0);
-  }
+
 }
 function renderFlow(){
   const p=CONFIG.processes[currentProcess];
@@ -860,7 +854,7 @@ function renderWorkSteps(){
     box.appendChild(div);
     renderFiles(i);
   });
-  if(currentProcess === 'ventas') {
+  if (currentProcess === 'ventas') {
     renderFiles(0);
   }
 }
@@ -903,9 +897,7 @@ function addFiles(i, files){
     };
     reader.readAsDataURL(file);
   });
-  if(currentProcess === 'ventas') {
-    renderFiles(0);
-  }
+
 }
 function renderFiles(i){
   const holder=document.getElementById("files-"+i); if(!holder) return;
@@ -917,9 +909,7 @@ function renderFiles(i){
     row.innerHTML=`<span title="${esc(f.name)}">📎 ${esc(f.name)} <small>(${fmtSize(f.size)})</small></span><button type="button" class="danger" onclick="removeFile(${i},${idx})">Quitar</button>`;
     holder.appendChild(row);
   });
-  if(currentProcess === 'ventas') {
-    renderFiles(0);
-  }
+
 }
 function removeFile(i,idx){ state.processes[currentProcess].steps[i].files.splice(idx,1); save(); render(); }
 function renderDocs(){
@@ -941,9 +931,7 @@ function renderDocs(){
       }
     });
   });
-  if(currentProcess === 'ventas') {
-    renderFiles(0);
-  }
+
 }
 function renderRules(){
   const body=document.getElementById("ruleRows"); if(body){ body.innerHTML=""; Object.keys(CONFIG.processes).forEach(k=>{ const p=CONFIG.processes[k]; (p.rules||[]).forEach(r=>{ const tr=document.createElement("tr"); tr.innerHTML=`<td>${esc(p.label)}</td><td>${esc(r.rule)}</td><td>${esc(r.condition)}</td><td>${esc(r.action)}</td><td>${esc(r.note||"")}</td>`; body.appendChild(tr); }); }); }
@@ -1042,9 +1030,7 @@ function makeZip(entries){
   const centralSize=central.reduce((s,p)=>s+p.length,0), centralOffset=offset;
   const end=new Uint8Array([...u32(0x06054b50),...u16(0),...u16(0),...u16(entries.length),...u16(entries.length),...u32(centralSize),...u32(centralOffset),...u16(0)]);
   return new Blob([...local,...central,end],{type:"application/zip"});
-  if(currentProcess === 'ventas') {
-    renderFiles(0);
-  }
+
 }
 function iconFor(i){ return ["🔎","📋","📄","📦","🧾","🧮","📅","🏦","📁","✅","⚙️","💬"][i] || "•"; }
 
@@ -1071,9 +1057,7 @@ function init(){
 // --- COTIZACIONES INTEGRATION ---
 if (typeof localforage !== 'undefined') {
   localforage.config({ name: 'J3K_Cotizaciones' });
-  if(currentProcess === 'ventas') {
-    renderFiles(0);
-  }
+
 }
 
 let currentQuotes = [];
