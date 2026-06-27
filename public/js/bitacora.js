@@ -1,5 +1,6 @@
-const KEY = "bitacora_j3k_vehicular_limpia";
-  const firmas = ["firma1", "firma2", "firma3"];
+const STORAGE_KEY = "bitacoras_db";
+const firmas = ["firma1", "firma2", "firma3"];
+let currentCUI = null;
 
   function num(v) {
     const x = parseFloat(v);
@@ -103,11 +104,12 @@ const KEY = "bitacora_j3k_vehicular_limpia";
   }
 
   function recogerDatos() {
-    const d = { campos: {}, filas: [], firmas: {} };
+    const d = { cui: currentCUI, campos: {}, filas: [], firmas: {} };
 
     document.querySelectorAll("[data-key]").forEach(el => {
       d.campos[el.dataset.key] = el.value;
     });
+    d.campos.totalGasto = document.getElementById("totalGasto").value;
 
     document.querySelectorAll("#tabla tr").forEach(tr => {
       const fila = {};
@@ -147,18 +149,100 @@ const KEY = "bitacora_j3k_vehicular_limpia";
     calcularTotales();
   }
 
-  function guardar() {
-    saveToFirebase(KEY, recogerDatos()); localStorage.setItem(KEY, JSON.stringify(recogerDatos()));
-    alert("Bitácora guardada en este navegador.");
+  async function guardar() {
+    const d = recogerDatos();
+    let db = await localforage.getItem(STORAGE_KEY) || [];
+    const index = db.findIndex(b => b.cui === currentCUI);
+    if (index >= 0) {
+      db[index] = d;
+    } else {
+      db.push(d);
+    }
+    await localforage.setItem(STORAGE_KEY, db);
+    if (typeof saveToFirebase === 'function') {
+      saveToFirebase(STORAGE_KEY, db);
+    }
+    alert("Bitácora guardada.");
+    volverDashboard();
   }
 
-  function cargar() {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) {
-      alert("No hay datos guardados en este navegador.");
+  async function cargarDashboard() {
+    const db = await localforage.getItem(STORAGE_KEY) || [];
+    const tbody = document.getElementById("lista-bitacoras");
+    tbody.innerHTML = "";
+    db.forEach(bit => {
+      const tr = document.createElement("tr");
+      tr.style.borderBottom = "1px solid #ccc";
+      const gasto = bit.campos?.totalGasto || "0.00";
+      
+      tr.innerHTML = `
+        <td style="padding: 10px;">${bit.cui || '-'}</td>
+        <td style="padding: 10px;">${bit.campos?.periodo || '-'}</td>
+        <td style="padding: 10px;">${bit.campos?.placa || '-'}</td>
+        <td style="padding: 10px;">S/ ${gasto}</td>
+        <td style="padding: 10px;">
+          <button class="alt" onclick="editarBitacora('${bit.cui}')">Editar</button>
+          <button class="danger" onclick="eliminarBitacora('${bit.cui}')">Eliminar</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  async function nuevaBitacora() {
+    currentCUI = await generarCUI();
+    limpiarSilencioso();
+    document.getElementById('view-dashboard').style.display = 'none';
+    document.getElementById('view-editor').style.display = 'block';
+  }
+
+  function volverDashboard() {
+    document.getElementById('view-editor').style.display = 'none';
+    document.getElementById('view-dashboard').style.display = 'block';
+    cargarDashboard();
+  }
+
+  async function generarCUI() {
+    const db = await localforage.getItem(STORAGE_KEY) || [];
+    let max = 0;
+    db.forEach(b => {
+      if (b.cui && b.cui.startsWith("CUI-V-")) {
+        const num = parseInt(b.cui.split("CUI-V-")[1], 10);
+        if (!isNaN(num) && num > max) max = num;
+      }
+    });
+    const next = String(max + 1).padStart(3, '0');
+    return \`CUI-V-\${next}\`;
+  }
+
+  async function editarBitacora(cui) {
+    const pin = prompt("Ingrese J3K_MASTER_PIN para editar:");
+    if (pin !== localStorage.getItem('J3K_MASTER_PIN')) {
+      alert("PIN incorrecto o no autorizado.");
       return;
     }
-    aplicarDatos(JSON.parse(raw));
+    const db = await localforage.getItem(STORAGE_KEY) || [];
+    const bit = db.find(b => b.cui === cui);
+    if (bit) {
+      currentCUI = cui;
+      aplicarDatos(bit);
+      document.getElementById('view-dashboard').style.display = 'none';
+      document.getElementById('view-editor').style.display = 'block';
+    }
+  }
+
+  async function eliminarBitacora(cui) {
+    const pin = prompt("Ingrese J3K_MASTER_PIN para eliminar definitivamente:");
+    if (pin !== localStorage.getItem('J3K_MASTER_PIN')) {
+      alert("PIN incorrecto o no autorizado.");
+      return;
+    }
+    if (!confirm("¿Está seguro de eliminar esta bitácora?")) return;
+    
+    let db = await localforage.getItem(STORAGE_KEY) || [];
+    db = db.filter(b => b.cui !== cui);
+    await localforage.setItem(STORAGE_KEY, db);
+    cargarDashboard();
   }
 
   function exportar() {
@@ -175,7 +259,10 @@ const KEY = "bitacora_j3k_vehicular_limpia";
   function limpiar() {
     if (!confirm("¿Limpiar toda la bitácora?")) return;
 
-    localStorage.removeItem(KEY);
+    limpiarSilencioso();
+  }
+
+  function limpiarSilencioso() {
     document.querySelectorAll("input, textarea").forEach(el => {
       if (!el.readOnly && el.dataset.key !== "contratoTipo") el.value = "";
     });
@@ -272,6 +359,5 @@ const KEY = "bitacora_j3k_vehicular_limpia";
 
   window.onload = () => {
     firmas.forEach(id => iniciarFirma(document.getElementById(id)));
-    agregarFilas(10);
-    calcularTotales();
+    cargarDashboard();
   };

@@ -47,15 +47,224 @@ function aplicar(d) {
   }, 100);
 }
 
-function guardar() {
-  saveToFirebase(KEY, recoger()); localStorage.setItem(KEY, JSON.stringify(recoger()));
-  alert("Contrato guardado en este navegador.");
+
+const DB_KEY = 'contratos_db';
+let currentAction = null;
+
+async function renderDashboard() {
+  const table = document.getElementById("dbTbody");
+  if (!table) return;
+  const contratos = await localforage.getItem(DB_KEY) || [];
+  table.innerHTML = "";
+  if (contratos.length === 0) {
+    table.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px;">No hay contratos guardados.</td></tr>';
+    return;
+  }
+  
+  contratos.slice().reverse().forEach(c => {
+    const tr = document.createElement("tr");
+    const arr = (c.fields && c.fields[2]) ? c.fields[2] : 'SIN NOMBRE';
+    tr.innerHTML = `
+      <td style="padding:12px; border-bottom:1px solid #e2e8f0;"><b>${c.cui}</b></td>
+      <td style="padding:12px; border-bottom:1px solid #e2e8f0;">${c.date || 'Reciente'}</td>
+      <td style="padding:12px; border-bottom:1px solid #e2e8f0;">${arr}</td>
+      <td style="padding:12px; border-bottom:1px solid #e2e8f0;">
+        <button onclick="editarContrato('${c.cui}')" style="background:#3b82f6; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:12px;">Abrir</button>
+        <button onclick="eliminarContrato('${c.cui}')" style="background:#ef4444; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:12px;">X</button>
+      </td>
+    `;
+    table.appendChild(tr);
+  });
 }
 
-function cargar() {
-  const raw = localStorage.getItem(KEY);
-  if (!raw) return alert("No hay contrato guardado en este navegador.");
-  aplicar(JSON.parse(raw));
+function showDashboard() {
+  document.getElementById("view-dashboard").style.display = "block";
+  document.getElementById("view-editor").style.display = "none";
+  renderDashboard();
+}
+
+function showEditor() {
+  document.getElementById("view-dashboard").style.display = "none";
+  document.getElementById("view-editor").style.display = "block";
+}
+
+async function nuevoContrato() {
+  document.getElementById("editorTitle").innerText = "Nuevo Contrato";
+  limpiarCampos();
+  
+  const contratos = await localforage.getItem(DB_KEY) || [];
+  let nextId = 1;
+  const nums = contratos.map(c => parseInt(c.cui.replace('CUI-CONT-', ''))).filter(n => !isNaN(n));
+  if (nums.length > 0) nextId = Math.max(...nums) + 1;
+  
+  const newCui = "CUI-CONT-" + String(nextId).padStart(3, '0');
+  document.getElementById("cui-display").innerText = newCui;
+  document.getElementById("cui-hidden").value = newCui;
+  
+  showEditor();
+}
+
+async function guardarContrato() {
+  const cui = document.getElementById("cui-hidden").value;
+  if (!cui) return;
+  const data = recoger();
+  data.cui = cui;
+  data.date = new Date().toLocaleString();
+  
+  let contratos = await localforage.getItem(DB_KEY) || [];
+  const index = contratos.findIndex(a => a.cui === cui);
+  if (index >= 0) {
+    contratos[index] = data;
+  } else {
+    contratos.push(data);
+  }
+  await localforage.setItem(DB_KEY, contratos);
+  
+  alert("Contrato guardado exitosamente.");
+  showDashboard();
+}
+
+function editarContrato(cui) {
+  currentAction = { type: 'edit', cui: cui };
+  document.getElementById("auth-pin").value = "";
+  document.getElementById("modal-auth").style.display = "flex";
+}
+
+function eliminarContrato(cui) {
+  currentAction = { type: 'delete', cui: cui };
+  document.getElementById("auth-pin").value = "";
+  document.getElementById("modal-auth").style.display = "flex";
+}
+
+function cerrarAuth() {
+  document.getElementById("modal-auth").style.display = "none";
+  currentAction = null;
+}
+
+async function confirmarAuth() {
+  const pinInput = document.getElementById("auth-pin").value;
+  const masterPin = localStorage.getItem("J3K_MASTER_PIN") || "0000";
+  
+  if (pinInput !== masterPin) {
+    alert("PIN incorrecto. Operación denegada.");
+    return;
+  }
+  
+  cerrarAuth();
+  
+  if (currentAction && currentAction.type === 'edit') {
+    const contratos = await localforage.getItem(DB_KEY) || [];
+    const con = contratos.find(a => a.cui === currentAction.cui);
+    if(con) {
+      document.getElementById("cui-display").innerText = currentAction.cui;
+      document.getElementById("cui-hidden").value = currentAction.cui;
+      document.getElementById("editorTitle").innerText = "Editar Contrato";
+      limpiarCampos();
+      aplicar(con);
+      showEditor();
+    }
+  } else if (currentAction && currentAction.type === 'delete') {
+    if (confirm("¿Está seguro de eliminar permanentemente?")) {
+      let contratos = await localforage.getItem(DB_KEY) || [];
+      contratos = contratos.filter(a => a.cui !== currentAction.cui);
+      await localforage.setItem(DB_KEY, contratos);
+      renderDashboard();
+    }
+  }
+  currentAction = null;
+}
+
+function limpiarCampos() {
+  document.querySelectorAll(".page input:not([type=file]), .page textarea").forEach(el => el.value = "");
+  document.querySelectorAll(".page .sig-area img").forEach(img => {
+    img.removeAttribute("src");
+    img.style.display = "none";
+  });
+  document.querySelectorAll(".page .sig-placeholder").forEach(el => el.style.display = "block");
+  if (authAction === 'editar') {
+    editarContrato(authTarget);
+  } else if (authAction === 'eliminar') {
+    eliminarContrato(authTarget);
+  }
+}
+
+function editarContrato(cui) {
+  const idx = contratosArray.findIndex(c => c.cui === cui);
+  if(idx === -1) return;
+  currentCui = cui;
+  currentIdx = idx;
+  _limpiarFormulario();
+  aplicar(contratosArray[idx]);
+  document.getElementById("display-cui").innerText = currentCui;
+  document.getElementById("cui").value = currentCui;
+  showEditor();
+}
+
+async function eliminarContrato(cui) {
+  if(!confirm("¿Está seguro de eliminar definitivamente este contrato?")) return;
+  contratosArray = contratosArray.filter(c => c.cui !== cui);
+  await localforage.setItem(KEY, contratosArray);
+  renderDashboard();
+}
+
+function syncCampos() {
+  const pares = [
+    ["lugarFirma","lugarTexto"], ["fechaContrato","fechaTexto"],
+    ["arrNombre","arrNombreTexto"], ["arrDoc","arrDocTexto"], ["arrDomicilio","arrDomTexto"],
+    ["repNombre","repTexto"], ["repDni","repDniTexto"],
+    ["fechaInicio","clInicio"], ["fechaFin","clFin"], ["renta","clRenta"],
+    ["placa","actaPlaca"], ["kmEntrega","actaKm"], ["soat","actaSoat"], ["revtec","actaRev"],
+    ["arrNombre","firmaArrNombre"], ["arrDoc","firmaArrDoc"],
+    ["repNombre","firmaRep"], ["repDni","firmaRepDni"]
+  ];
+  pares.forEach(([a,b]) => {
+    const origen = document.querySelector(`[data-key="${a}"]`);
+    const destino = document.querySelector(`[data-key="${b}"]`);
+    if (origen && destino && !destino.value) destino.value = origen.value;
+  });
+}
+
+function recoger() {
+  syncCampos();
+  const d = { cui: currentCui, campos: {}, checks: {}, firmas: {} };
+  document.querySelectorAll("[data-key]").forEach(el => {
+    if (el.type === "checkbox") d.checks[el.dataset.key] = el.checked;
+    else d.campos[el.dataset.key] = el.value;
+  });
+  firmas.forEach(id => {
+    const c = document.getElementById(id);
+    d.firmas[id] = c.toDataURL("image/png");
+  });
+  d.timestamp = new Date().toISOString();
+  return d;
+}
+
+function aplicar(d) {
+  if (!d) return;
+  Object.entries(d.campos || {}).forEach(([k,v]) => {
+    const el = document.querySelector(`[data-key="${k}"]`);
+    if (el && el.type !== "checkbox") el.value = v;
+  });
+  Object.entries(d.checks || {}).forEach(([k,v]) => {
+    const el = document.querySelector(`[data-key="${k}"]`);
+    if (el && el.type === "checkbox") el.checked = !!v;
+  });
+  setTimeout(() => {
+    Object.entries(d.firmas || {}).forEach(([id,src]) => restaurarFirma(id, src));
+  }, 100);
+}
+
+async function guardar() {
+  const d = recoger();
+  if (currentIdx === -1) {
+    contratosArray.push(d);
+    currentIdx = contratosArray.length - 1;
+  } else {
+    contratosArray[currentIdx] = d;
+  }
+  await localforage.setItem(KEY, contratosArray);
+  if(typeof saveToFirebase === 'function') saveToFirebase(KEY, d);
+  alert("Contrato guardado correctamente.");
 }
 
 function exportar() {
@@ -64,19 +273,22 @@ function exportar() {
   const blob = new Blob([JSON.stringify(d, null, 2)], {type:"application/json"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "contrato_arrendamiento_camioneta_J3K_" + placa + ".json";
+  a.download = "contrato_arrendamiento_" + currentCui + "_" + placa + ".json";
   a.click();
   URL.revokeObjectURL(a.href);
 }
 
-function limpiar() {
-  if (!confirm("¿Limpiar todo el contrato?")) return;
-  localStorage.removeItem(KEY);
+function _limpiarFormulario() {
   document.querySelectorAll("[data-key]").forEach(el => {
     if (el.type === "checkbox") el.checked = false;
     else if (!el.readOnly) el.value = "";
   });
   firmas.forEach(limpiarFirma);
+}
+
+function limpiar() {
+  if (!confirm("¿Limpiar todo el formulario actual?")) return;
+  _limpiarFormulario();
 }
 
 function iniciarFirma(canvas) {
@@ -154,4 +366,5 @@ function restaurarFirma(id, src) {
 window.onload = () => {
   firmas.forEach(id => iniciarFirma(document.getElementById(id)));
   document.querySelectorAll("[data-key]").forEach(el => el.addEventListener("change", syncCampos));
+  loadDB();
 };

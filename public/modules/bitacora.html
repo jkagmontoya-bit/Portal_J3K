@@ -74,13 +74,37 @@
 <a href="#contenido-principal" class="skip-link">Saltar al contenido principal</a>
 
 
-<div class="toolbar">
+<div id="view-dashboard" class="view active">
+  <div class="toolbar" style="justify-content: space-between; display: flex;">
+    <h2 style="margin: 0; color: #fff; padding-left: 10px;">Bitácoras Vehiculares</h2>
+    <button type="button" class="green" onclick="nuevaBitacora()">+ Nueva Bitácora</button>
+  </div>
+  <div class="box" style="margin: 20px;">
+    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+      <thead>
+        <tr style="border-bottom: 2px solid #004D33;">
+          <th style="padding: 10px;">CUI</th>
+          <th style="padding: 10px;">Periodo</th>
+          <th style="padding: 10px;">Placa</th>
+          <th style="padding: 10px;">Total S/</th>
+          <th style="padding: 10px;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="lista-bitacoras">
+        <!-- JS will populate this -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div id="view-editor" class="view" style="display:none;">
+  <div class="toolbar">
+    <button type="button" class="alt" onclick="volverDashboard()">Volver</button>
     <button type="button" class="green" onclick="agregarFilas(1)">+ 1 entrada</button>
     <button type="button" class="green" onclick="agregarFilas(5)">+ 5 entradas</button>
     <button type="button" class="green" onclick="agregarFilas(10)">+ 10 entradas</button>
     <button type="button" class="alt" onclick="window.print()">Imprimir / Guardar PDF</button>
     <button type="button" class="alt" onclick="guardar()">Guardar</button>
-    <button type="button" class="alt" onclick="cargar()">Cargar</button>
     <button type="button" class="alt" onclick="exportar()">Exportar respaldo</button>
     <button type="button" class="danger" onclick="limpiar()">Limpiar</button>
   </div>
@@ -248,12 +272,15 @@
       La firma en pantalla es firma gráfica simple. Para mayor respaldo, guardar en PDF y/o firmar físicamente.
     </div>
   </div>
+</div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script> `n  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 <script src="../js/firebase_config.js"></script>
-  <script src="../js/utils.js"></script>
+<script src="../js/utils.js"></script>
 <script src="../js/bitacora.js"></script>
 
 <script id="j3k-error-handler">

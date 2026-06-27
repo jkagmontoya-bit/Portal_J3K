@@ -344,15 +344,116 @@ const KEY = "boleta_j3k_prolija_proyeccion_v3";
     calcular();
   }
 
-  function guardar() {
-    saveToFirebase(KEY, collectData()); localStorage.setItem(KEY, JSON.stringify(collectData()));
-    alert("Datos guardados en este navegador.");
+  let boletasDB = [];
+  let currentBoletaCUI = null;
+
+  async function cargarDB() {
+    try {
+      const db = await localforage.getItem('boletas_db');
+      boletasDB = db || [];
+      renderBoletasTable();
+    } catch(e) {
+      console.error(e);
+    }
   }
 
-  function cargar() {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return alert("No hay datos guardados.");
-    applyData(JSON.parse(raw));
+  function renderBoletasTable() {
+    const tbody = document.getElementById('boletas-tbody');
+    if(!tbody) return;
+    tbody.innerHTML = '';
+    boletasDB.forEach(boleta => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${J3K_UTILS.escapeHTML(boleta.cui)}</td>
+        <td>${J3K_UTILS.escapeHTML(boleta.trabajadora || '-')}</td>
+        <td>${J3K_UTILS.escapeHTML(boleta.periodo || '-')}</td>
+        <td>${J3K_UTILS.formatMoney(boleta.neto || 0)}</td>
+        <td>
+          <button type="button" class="alt" style="margin-right:5px; padding:5px 10px; font-size:12px;" onclick="editarBoleta('${boleta.cui}')">Editar</button>
+          <button type="button" class="danger" style="padding:5px 10px; font-size:12px;" onclick="eliminarBoleta('${boleta.cui}')">Eliminar</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function nuevaBoleta() {
+    limpiarSinConfirmar();
+    currentBoletaCUI = null;
+    document.getElementById('view-dashboard').style.display = 'none';
+    document.getElementById('view-editor').style.display = 'block';
+  }
+
+  function volverDashboard() {
+    document.getElementById('view-editor').style.display = 'none';
+    document.getElementById('view-dashboard').style.display = 'block';
+    cargarDB();
+  }
+
+  function generateCUI(data) {
+    const dni = data.campos.dni || "SINDNI";
+    const nombre = data.campos.trabajadora || "SINNOMBRE";
+    const periodo = data.campos.periodo || "SINMES";
+    return `${dni} - ${nombre} - ${periodo}`;
+  }
+
+  async function guardarBoleta() {
+    const data = collectData();
+    const c = obtenerCalculoMensual(parseInt(val("mesPago") || "1", 10));
+    data.neto = c.neto;
+    data.trabajadora = data.campos.trabajadora;
+    data.periodo = data.campos.periodo;
+    
+    if (!currentBoletaCUI) {
+      data.cui = generateCUI(data);
+      boletasDB.push(data);
+    } else {
+      data.cui = currentBoletaCUI;
+      const index = boletasDB.findIndex(b => b.cui === currentBoletaCUI);
+      if (index !== -1) {
+        boletasDB[index] = data;
+      } else {
+        boletasDB.push(data);
+      }
+    }
+    
+    currentBoletaCUI = data.cui;
+    try {
+      await localforage.setItem('boletas_db', boletasDB);
+      if(typeof saveToFirebase === 'function') saveToFirebase('boletas_db', boletasDB);
+      alert("Boleta guardada con éxito. CUI: " + data.cui);
+    } catch(e) {
+      console.error(e);
+      alert("Error guardando boleta localmente.");
+    }
+  }
+
+  function editarBoleta(cui) {
+    const pin = prompt("Ingrese J3K_MASTER_PIN para editar:");
+    if (pin !== localStorage.getItem('J3K_MASTER_PIN')) {
+      alert("PIN incorrecto.");
+      return;
+    }
+    const boleta = boletasDB.find(b => b.cui === cui);
+    if (boleta) {
+      currentBoletaCUI = cui;
+      applyData(boleta);
+      document.getElementById('view-dashboard').style.display = 'none';
+      document.getElementById('view-editor').style.display = 'block';
+    }
+  }
+
+  async function eliminarBoleta(cui) {
+    const pin = prompt("Ingrese J3K_MASTER_PIN para eliminar:");
+    if (pin !== localStorage.getItem('J3K_MASTER_PIN')) {
+      alert("PIN incorrecto.");
+      return;
+    }
+    if (!confirm("¿Está seguro de eliminar esta boleta?")) return;
+    boletasDB = boletasDB.filter(b => b.cui !== cui);
+    await localforage.setItem('boletas_db', boletasDB);
+    if(typeof saveToFirebase === 'function') saveToFirebase('boletas_db', boletasDB);
+    renderBoletasTable();
   }
 
   function exportar() {
@@ -366,9 +467,7 @@ const KEY = "boleta_j3k_prolija_proyeccion_v3";
     URL.revokeObjectURL(a.href);
   }
 
-  function limpiar() {
-    if (!confirm("¿Limpiar datos?")) return;
-    localStorage.removeItem(KEY);
+  function limpiarSinConfirmar() {
     document.querySelectorAll("[data-key]").forEach(el => {
       if (el.id === "mesPago") el.value = "1";
       else if (el.id === "anioPago") el.value = "2026";
@@ -388,11 +487,20 @@ const KEY = "boleta_j3k_prolija_proyeccion_v3";
       else if (el.readOnly) el.value = "";
       else el.value = "";
     });
-    ["firmaEmpleador", "firmaTrabajadora"].forEach(id => document.getElementById(id).innerHTML = "");
+    ["firmaEmpleador", "firmaTrabajadora"].forEach(id => {
+      const e = document.getElementById(id);
+      if(e) e.innerHTML = "";
+    });
     calcular();
   }
 
+  function limpiar() {
+    if (!confirm("¿Limpiar datos del formulario? No eliminará la boleta de la base de datos, solo limpiará la vista actual.")) return;
+    limpiarSinConfirmar();
+  }
+
   window.onload = () => {
+    cargarDB();
     actualizarPeriodo();
     ajustarProyeccion();
     calcular();

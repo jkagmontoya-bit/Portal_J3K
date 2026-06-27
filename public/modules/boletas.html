@@ -74,14 +74,36 @@
 <a href="#contenido-principal" class="skip-link">Saltar al contenido principal</a>
 
 
-<div class="toolbar">
-    <button type="button" class="green" onclick="calcular()">Calcular</button>
-    <button type="button" class="alt" onclick="window.print()">Imprimir / Guardar PDF</button>
-    <button type="button" class="alt" onclick="guardar()">Guardar</button>
-    <button type="button" class="alt" onclick="cargar()">Cargar</button>
-    <button type="button" class="alt" onclick="exportar()">Exportar JSON</button>
-    <button type="button" class="danger" onclick="limpiar()">Limpiar</button>
+  <div id="view-dashboard" class="view active">
+    <div class="toolbar">
+      <button type="button" class="green" onclick="nuevaBoleta()">Nueva Boleta</button>
+    </div>
+    <div class="table-container">
+      <table class="modern-table" id="boletas-table" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <thead>
+          <tr style="background-color: #004D33; color: white;">
+            <th style="padding: 10px; border: 1px solid #ddd;">CUI</th>
+            <th style="padding: 10px; border: 1px solid #ddd;">Trabajadora</th>
+            <th style="padding: 10px; border: 1px solid #ddd;">Periodo</th>
+            <th style="padding: 10px; border: 1px solid #ddd;">Monto Neto</th>
+            <th style="padding: 10px; border: 1px solid #ddd;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="boletas-tbody" style="text-align: center;">
+        </tbody>
+      </table>
+    </div>
   </div>
+
+  <div id="view-editor" class="view" style="display:none;">
+    <div class="toolbar">
+      <button type="button" class="alt" onclick="volverDashboard()">Volver al Historial</button>
+      <button type="button" class="green" onclick="calcular()">Calcular</button>
+      <button type="button" class="alt" onclick="window.print()">Imprimir / Guardar PDF</button>
+      <button type="button" class="alt" onclick="guardarBoleta()">Guardar en BD</button>
+      <button type="button" class="alt" onclick="exportar()">Exportar JSON</button>
+      <button type="button" class="danger" onclick="limpiar()">Limpiar</button>
+    </div>
 
   <div id="contenido-principal" class="screen">
     <div class="screen-inputs">
@@ -467,7 +489,9 @@
       Verificar inscripción REMYPE, T-Registro, PLAME, sistema pensionario y tasas vigentes antes de declarar. En impresión solo sale la boleta.
     </div>
   </div>
+  </div> <!-- Close view-editor -->
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script> `n  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
