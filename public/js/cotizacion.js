@@ -46,7 +46,10 @@
       if(c.deletedAt && (now - c.deletedAt > sevenDays)) { changed = true; return false; }
       return true;
     });
-    if(changed) await saveToFirebase('cotizaciones', DB); await saveToFirebase('cotizaciones', DB); localforage.setItem('cotizaciones_db', DB); // Backup local
+    if(changed) {
+      await saveToFirebase('cotizaciones', DB);
+      localforage.setItem('cotizaciones_db', DB); // Backup local
+    }
 
     
     extFileInput.addEventListener('change', function(e) {
@@ -112,7 +115,7 @@
         if(cot) {
            cot.historial = cot.historial || [];
            cot.historial.push({ user: user, action: 'Intento fallido de eliminación (PIN Incorrecto)', date: new Date().toLocaleString() });
-           await saveToFirebase('cotizaciones', DB); await saveToFirebase('cotizaciones', DB); localforage.setItem('cotizaciones_db', DB); // Backup local
+           await saveToFirebase('cotizaciones', DB); localforage.setItem('cotizaciones_db', DB); // Backup local
         }
         return;
      }
@@ -125,7 +128,7 @@
            cot.deletedAt = Date.now();
            cot.historial = cot.historial || [];
            cot.historial.push({ user: user, action: 'Enviado a papelera', date: new Date().toLocaleString() });
-           await saveToFirebase('cotizaciones', DB); await saveToFirebase('cotizaciones', DB); localforage.setItem('cotizaciones_db', DB); // Backup local
+           await saveToFirebase('cotizaciones', DB); localforage.setItem('cotizaciones_db', DB); // Backup local
            cerrarAuth();
            renderDashboard();
         }
@@ -136,13 +139,13 @@
             cot.estado = newState;
             cot.historial = cot.historial || [];
             cot.historial.push({ user: document.getElementById('auth-user').value.trim(), action: newState ? 'Cotización Aprobada' : 'Aprobación Removida', date: new Date().toLocaleString() });
-            await saveToFirebase('cotizaciones', DB); await saveToFirebase('cotizaciones', DB); localforage.setItem('cotizaciones_db', DB); // Backup local
+            await saveToFirebase('cotizaciones', DB); localforage.setItem('cotizaciones_db', DB); // Backup local
             cerrarAuth();
             renderDashboard();
          }
      } else if(currentAuthAction === 'hard-delete') {
         DB = DB.filter(c => c.id !== currentAuthId);
-        await saveToFirebase('cotizaciones', DB); await saveToFirebase('cotizaciones', DB); localforage.setItem('cotizaciones_db', DB); // Backup local
+        await saveToFirebase('cotizaciones', DB); localforage.setItem('cotizaciones_db', DB); // Backup local
         cerrarAuth();
         verPapelera();
      }
@@ -193,7 +196,7 @@
         cot.historial = cot.historial || [];
         const user = localStorage.getItem('J3K_USER_NAME') || 'Sistema';
         cot.historial.push({ user: user, action: 'Restaurado de papelera', date: new Date().toLocaleString() });
-        await saveToFirebase('cotizaciones', DB); await saveToFirebase('cotizaciones', DB); localforage.setItem('cotizaciones_db', DB); // Backup local
+        await saveToFirebase('cotizaciones', DB); localforage.setItem('cotizaciones_db', DB); // Backup local
         verPapelera();
      }
   }
@@ -457,7 +460,7 @@ function renderDashboard() {
     };
 
     DB.push(data);
-    await saveToFirebase('cotizaciones', DB); await saveToFirebase('cotizaciones', DB); localforage.setItem('cotizaciones_db', DB); // Backup local
+    await saveToFirebase('cotizaciones', DB); localforage.setItem('cotizaciones_db', DB); // Backup local
     renderDashboard();
     showDashboard();
   }
@@ -614,7 +617,7 @@ function renderDashboard() {
     if(isNew) DB.push(data);
     else DB[DB.findIndex(c => c.id === currentDoc.id)] = data;
 
-    await saveToFirebase('cotizaciones', DB); await saveToFirebase('cotizaciones', DB); localforage.setItem('cotizaciones_db', DB); // Backup local
+    await saveToFirebase('cotizaciones', DB); localforage.setItem('cotizaciones_db', DB); // Backup local
     renderDashboard();
     showDashboard();
   }
@@ -897,14 +900,10 @@ Si no encuentras un dato, déjalo vacío (""). Para "total", extrae SOLO EL NÚM
   }
 
   if (window.waitForAuth) {
-    window.waitForAuth().then(() => initDB());
+    window.waitForAuth().then(user => {
+      if (user) initDB();
+      else console.log('Usuario no autenticado, DB no se carga');
+    });
   } else {
-  if (window.waitForAuth) {
-  window.waitForAuth().then(user => {
-    if (user) initDB();
-    else console.log('Usuario no autenticado, DB no se carga');
-  });
-} else {
-  initDB();
-}
+    initDB();
   }

@@ -22,9 +22,12 @@ if (typeof firebase.auth === 'function') {
 }
 if (auth) {
   auth.onAuthStateChanged(user => {
-    if (user) {
-      // Recargar página tras autenticación para actualizar cotizaciones
+    if (user && !sessionStorage.getItem('j3k_auth_loaded')) {
+      sessionStorage.setItem('j3k_auth_loaded', '1');
       location.reload();
+    }
+    if (!user) {
+      sessionStorage.removeItem('j3k_auth_loaded');
     }
   });
 }
