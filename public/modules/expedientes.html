@@ -888,7 +888,7 @@ function addFiles(i, files){
     reader.onload=e=>{
       state.processes[currentProcess].steps[i].files.push({name:file.name,type:file.type||"application/octet-stream",size:file.size,data:e.target.result,addedAt:new Date().toISOString()});
       
-      if(CONFIG.processes[currentProcess].steps[i].name === "Entrega y conformidad") {
+      if(CONFIG.processes[currentProcess].steps[i].name === "Entrega y conformidad" || CONFIG.processes[currentProcess].steps[i].name === "Cobranza") {
         state.processes[currentProcess].steps[i].ok = true;
       }
       
