@@ -149,9 +149,38 @@ function saveCurrentToBuffer() {
 }
 
 function switchExpediente(id) {
-  saveCurrentToBuffer();
   let target = state.saved[currentProcess].find(x => x.id === id);
   if(target) {
+     if(target.pct === 100) {
+        const masterPin = localStorage.getItem('J3K_MASTER_PIN');
+        if(!masterPin) {
+           alert("Primero debes configurar el PIN Maestro de Seguridad en el módulo de Cotizaciones.");
+           document.getElementById('expedienteSelector').value = state.currentId[currentProcess];
+           return;
+        }
+        let attempts = 3;
+        let authOk = false;
+        while(attempts > 0) {
+           const pin = prompt(`Este expediente está al 100%.\\nIngrese el PIN Maestro para editarlo. (Intentos restantes: ${attempts})`);
+           if(pin === null) {
+              document.getElementById('expedienteSelector').value = state.currentId[currentProcess];
+              return;
+           }
+           if(pin === masterPin) {
+              authOk = true;
+              break;
+           } else {
+              attempts--;
+              if(attempts > 0) alert("PIN incorrecto. Inténtalo de nuevo.");
+           }
+        }
+        if(!authOk) {
+           alert("Demasiados intentos fallidos. Acceso denegado.");
+           document.getElementById('expedienteSelector').value = state.currentId[currentProcess];
+           return;
+        }
+     }
+     saveCurrentToBuffer();
      state.processes[currentProcess] = JSON.parse(JSON.stringify(target));
      state.currentId[currentProcess] = id;
      save(); render();
@@ -172,9 +201,7 @@ function render(){
       saveCurrentToBuffer(); // Ensure current is in the list
       
       let list = state.saved[currentProcess] || [];
-      if (currentProcess === 'ventas') {
-          list = list.filter(item => item.pct < 100 || item.id === state.currentId[currentProcess]);
-      }
+      // Ya no filtramos los completados, mostramos todos
       list.forEach(item => {
          const opt = document.createElement('option');
          opt.value = item.id;
